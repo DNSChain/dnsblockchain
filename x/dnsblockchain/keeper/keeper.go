@@ -19,8 +19,10 @@ type Keeper struct {
 	// Typically, this should be the x/gov module account.
 	authority []byte
 
-	Schema collections.Schema
-	Params collections.Item[types.Params]
+	Schema    collections.Schema
+	Params    collections.Item[types.Params]
+	DomainSeq collections.Sequence
+	Domain    collections.Map[uint64, types.Domain]
 }
 
 func NewKeeper(
@@ -42,9 +44,10 @@ func NewKeeper(
 		addressCodec: addressCodec,
 		authority:    authority,
 
-		Params: collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
+		Params:    collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
+		Domain:    collections.NewMap(sb, types.DomainKey, "domain", collections.Uint64Key, codec.CollValue[types.Domain](cdc)),
+		DomainSeq: collections.NewSequence(sb, types.DomainCountKey, "domainSequence"),
 	}
-
 	schema, err := sb.Build()
 	if err != nil {
 		panic(err)

@@ -8,6 +8,15 @@ import (
 
 // InitGenesis initializes the module's state from a provided genesis state.
 func (k Keeper) InitGenesis(ctx context.Context, genState types.GenesisState) error {
+	for _, elem := range genState.DomainList {
+		if err := k.Domain.Set(ctx, elem.Id, elem); err != nil {
+			return err
+		}
+	}
+
+	if err := k.DomainSeq.Set(ctx, genState.DomainCount); err != nil {
+		return err
+	}
 	return k.Params.Set(ctx, genState.Params)
 }
 
@@ -17,6 +26,18 @@ func (k Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error) 
 
 	genesis := types.DefaultGenesis()
 	genesis.Params, err = k.Params.Get(ctx)
+	if err != nil {
+		return nil, err
+	}
+	err = k.Domain.Walk(ctx, nil, func(key uint64, elem types.Domain) (bool, error) {
+		genesis.DomainList = append(genesis.DomainList, elem)
+		return false, nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	genesis.DomainCount, err = k.DomainSeq.Peek(ctx)
 	if err != nil {
 		return nil, err
 	}

@@ -1,9 +1,26 @@
-vue/node_modules
-vue/dist
-release/
+# Binaries
+dnsblockchaind
+dnsblockchain
+
+# Build artifacts
+build/
+*.o
+*.a
+*.so
+*.dylib
+
+# Data directory (si es local al proyecto, aunque no es común)
+# .data/
+
+# Dependencies (si no las quieres versionar)
+# vendor/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# IDE files
 .idea/
 .vscode/
-.DS_Store
-*.dot
-*.log
-*.ign
+*.swp
+*~

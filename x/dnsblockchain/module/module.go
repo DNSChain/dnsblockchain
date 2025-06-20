@@ -71,6 +71,14 @@ func (AppModule) RegisterGRPCGatewayRoutes(clientCtx client.Context, mux *runtim
 // RegisterInterfaces registers a module's interface types and their concrete implementations as proto.Message.
 func (AppModule) RegisterInterfaces(registrar codectypes.InterfaceRegistry) {
 	types.RegisterInterfaces(registrar)
+
+	registrar.RegisterImplementations(
+		(*sdk.Msg)(nil),
+		&types.MsgCreateDomain{},
+		&types.MsgUpdateDomain{},
+		&types.MsgTransferDomain{},
+		&types.MsgHeartbeatDomain{},
+	)
 }
 
 // RegisterServices registers a gRPC query service to respond to the module-specific gRPC queries

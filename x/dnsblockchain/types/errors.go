@@ -8,5 +8,6 @@ import (
 
 // x/dnsblockchain module sentinel errors
 var (
-	ErrInvalidSigner = errors.Register(ModuleName, 1100, "expected gov account as only signer for proposal message")
+	ErrInvalidSigner       = errors.Register(ModuleName, 1100, "expected gov account as only signer for proposal message")
+	ErrDuplicateDomainName = errors.Register(ModuleName, 1101, "domain name already exists")
 )

@@ -1,8 +1,10 @@
 syntax = "proto3";
+
 package dnsblockchain.dnsblockchain.v1;
 
 import "amino/amino.proto";
 import "cosmos/base/query/v1beta1/pagination.proto";
+import "dnsblockchain/dnsblockchain/v1/domain.proto";
 import "dnsblockchain/dnsblockchain/v1/params.proto";
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
@@ -14,6 +16,16 @@ service Query {
   // Parameters queries the parameters of the module.
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
     option (google.api.http).get = "/dnsblockchain/dnsblockchain/v1/params";
+  }
+
+  // ListDomain Queries a list of Domain items.
+  rpc GetDomain(QueryGetDomainRequest) returns (QueryGetDomainResponse) {
+    option (google.api.http).get = "/dnsblockchain/dnsblockchain/v1/domain/{id}";
+  }
+
+  // ListDomain defines the ListDomain RPC.
+  rpc ListDomain(QueryAllDomainRequest) returns (QueryAllDomainResponse) {
+    option (google.api.http).get = "/dnsblockchain/dnsblockchain/v1/domain";
   }
 }
 
@@ -27,4 +39,25 @@ message QueryParamsResponse {
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
+}
+
+// QueryGetDomainRequest defines the QueryGetDomainRequest message.
+message QueryGetDomainRequest {
+  uint64 id = 1;
+}
+
+// QueryGetDomainResponse defines the QueryGetDomainResponse message.
+message QueryGetDomainResponse {
+  Domain domain = 1 [(gogoproto.nullable) = false];
+}
+
+// QueryAllDomainRequest defines the QueryAllDomainRequest message.
+message QueryAllDomainRequest {
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
+
+// QueryAllDomainResponse defines the QueryAllDomainResponse message.
+message QueryAllDomainResponse {
+  repeated Domain domain = 1 [(gogoproto.nullable) = false];
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }

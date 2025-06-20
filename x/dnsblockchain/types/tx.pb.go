@@ -35,8 +35,6 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 type MsgUpdateParams struct {
 	// authority is the address that controls the module (defaults to x/gov unless overwritten).
 	Authority string `protobuf:"bytes,1,opt,name=authority,proto3" json:"authority,omitempty"`
-	// params defines the module parameters to update.
-	//
 	// NOTE: All parameters must be supplied.
 	Params Params `protobuf:"bytes,2,opt,name=params,proto3" json:"params"`
 }
@@ -126,9 +124,533 @@ func (m *MsgUpdateParamsResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgUpdateParamsResponse proto.InternalMessageInfo
 
+// MsgCreateDomain defines the MsgCreateDomain message.
+type MsgCreateDomain struct {
+	Creator    string `protobuf:"bytes,1,opt,name=creator,proto3" json:"creator,omitempty"`
+	Name       string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Owner      string `protobuf:"bytes,3,opt,name=owner,proto3" json:"owner,omitempty"`
+	Expiration uint64 `protobuf:"varint,4,opt,name=expiration,proto3" json:"expiration,omitempty"`
+	Ns         string `protobuf:"bytes,5,opt,name=ns,proto3" json:"ns,omitempty"`
+}
+
+func (m *MsgCreateDomain) Reset()         { *m = MsgCreateDomain{} }
+func (m *MsgCreateDomain) String() string { return proto.CompactTextString(m) }
+func (*MsgCreateDomain) ProtoMessage()    {}
+func (*MsgCreateDomain) Descriptor() ([]byte, []int) {
+	return fileDescriptor_a7ae1cda1295308e, []int{2}
+}
+func (m *MsgCreateDomain) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgCreateDomain) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgCreateDomain.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgCreateDomain) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgCreateDomain.Merge(m, src)
+}
+func (m *MsgCreateDomain) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgCreateDomain) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgCreateDomain.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgCreateDomain proto.InternalMessageInfo
+
+func (m *MsgCreateDomain) GetCreator() string {
+	if m != nil {
+		return m.Creator
+	}
+	return ""
+}
+
+func (m *MsgCreateDomain) GetName() string {
+	if m != nil {
+		return m.Name
+	}
+	return ""
+}
+
+func (m *MsgCreateDomain) GetOwner() string {
+	if m != nil {
+		return m.Owner
+	}
+	return ""
+}
+
+func (m *MsgCreateDomain) GetExpiration() uint64 {
+	if m != nil {
+		return m.Expiration
+	}
+	return 0
+}
+
+func (m *MsgCreateDomain) GetNs() string {
+	if m != nil {
+		return m.Ns
+	}
+	return ""
+}
+
+// MsgCreateDomainResponse defines the MsgCreateDomainResponse message.
+type MsgCreateDomainResponse struct {
+	Id uint64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+}
+
+func (m *MsgCreateDomainResponse) Reset()         { *m = MsgCreateDomainResponse{} }
+func (m *MsgCreateDomainResponse) String() string { return proto.CompactTextString(m) }
+func (*MsgCreateDomainResponse) ProtoMessage()    {}
+func (*MsgCreateDomainResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_a7ae1cda1295308e, []int{3}
+}
+func (m *MsgCreateDomainResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgCreateDomainResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgCreateDomainResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgCreateDomainResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgCreateDomainResponse.Merge(m, src)
+}
+func (m *MsgCreateDomainResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgCreateDomainResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgCreateDomainResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgCreateDomainResponse proto.InternalMessageInfo
+
+func (m *MsgCreateDomainResponse) GetId() uint64 {
+	if m != nil {
+		return m.Id
+	}
+	return 0
+}
+
+// MsgUpdateDomain defines the MsgUpdateDomain message.
+type MsgUpdateDomain struct {
+	Creator    string `protobuf:"bytes,1,opt,name=creator,proto3" json:"creator,omitempty"`
+	Id         uint64 `protobuf:"varint,2,opt,name=id,proto3" json:"id,omitempty"`
+	Owner      string `protobuf:"bytes,3,opt,name=owner,proto3" json:"owner,omitempty"`
+	Expiration uint64 `protobuf:"varint,4,opt,name=expiration,proto3" json:"expiration,omitempty"`
+	Ns         string `protobuf:"bytes,5,opt,name=ns,proto3" json:"ns,omitempty"`
+}
+
+func (m *MsgUpdateDomain) Reset()         { *m = MsgUpdateDomain{} }
+func (m *MsgUpdateDomain) String() string { return proto.CompactTextString(m) }
+func (*MsgUpdateDomain) ProtoMessage()    {}
+func (*MsgUpdateDomain) Descriptor() ([]byte, []int) {
+	return fileDescriptor_a7ae1cda1295308e, []int{4}
+}
+func (m *MsgUpdateDomain) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgUpdateDomain) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgUpdateDomain.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgUpdateDomain) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgUpdateDomain.Merge(m, src)
+}
+func (m *MsgUpdateDomain) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgUpdateDomain) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgUpdateDomain.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgUpdateDomain proto.InternalMessageInfo
+
+func (m *MsgUpdateDomain) GetCreator() string {
+	if m != nil {
+		return m.Creator
+	}
+	return ""
+}
+
+func (m *MsgUpdateDomain) GetId() uint64 {
+	if m != nil {
+		return m.Id
+	}
+	return 0
+}
+
+func (m *MsgUpdateDomain) GetOwner() string {
+	if m != nil {
+		return m.Owner
+	}
+	return ""
+}
+
+func (m *MsgUpdateDomain) GetExpiration() uint64 {
+	if m != nil {
+		return m.Expiration
+	}
+	return 0
+}
+
+func (m *MsgUpdateDomain) GetNs() string {
+	if m != nil {
+		return m.Ns
+	}
+	return ""
+}
+
+// MsgUpdateDomainResponse defines the MsgUpdateDomainResponse message.
+type MsgUpdateDomainResponse struct {
+}
+
+func (m *MsgUpdateDomainResponse) Reset()         { *m = MsgUpdateDomainResponse{} }
+func (m *MsgUpdateDomainResponse) String() string { return proto.CompactTextString(m) }
+func (*MsgUpdateDomainResponse) ProtoMessage()    {}
+func (*MsgUpdateDomainResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_a7ae1cda1295308e, []int{5}
+}
+func (m *MsgUpdateDomainResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgUpdateDomainResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgUpdateDomainResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgUpdateDomainResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgUpdateDomainResponse.Merge(m, src)
+}
+func (m *MsgUpdateDomainResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgUpdateDomainResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgUpdateDomainResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgUpdateDomainResponse proto.InternalMessageInfo
+
+// MsgDeleteDomain defines the MsgDeleteDomain message.
+type MsgDeleteDomain struct {
+	Creator string `protobuf:"bytes,1,opt,name=creator,proto3" json:"creator,omitempty"`
+	Id      uint64 `protobuf:"varint,2,opt,name=id,proto3" json:"id,omitempty"`
+}
+
+func (m *MsgDeleteDomain) Reset()         { *m = MsgDeleteDomain{} }
+func (m *MsgDeleteDomain) String() string { return proto.CompactTextString(m) }
+func (*MsgDeleteDomain) ProtoMessage()    {}
+func (*MsgDeleteDomain) Descriptor() ([]byte, []int) {
+	return fileDescriptor_a7ae1cda1295308e, []int{6}
+}
+func (m *MsgDeleteDomain) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgDeleteDomain) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgDeleteDomain.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgDeleteDomain) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgDeleteDomain.Merge(m, src)
+}
+func (m *MsgDeleteDomain) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgDeleteDomain) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgDeleteDomain.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgDeleteDomain proto.InternalMessageInfo
+
+func (m *MsgDeleteDomain) GetCreator() string {
+	if m != nil {
+		return m.Creator
+	}
+	return ""
+}
+
+func (m *MsgDeleteDomain) GetId() uint64 {
+	if m != nil {
+		return m.Id
+	}
+	return 0
+}
+
+// MsgDeleteDomainResponse defines the MsgDeleteDomainResponse message.
+type MsgDeleteDomainResponse struct {
+}
+
+func (m *MsgDeleteDomainResponse) Reset()         { *m = MsgDeleteDomainResponse{} }
+func (m *MsgDeleteDomainResponse) String() string { return proto.CompactTextString(m) }
+func (*MsgDeleteDomainResponse) ProtoMessage()    {}
+func (*MsgDeleteDomainResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_a7ae1cda1295308e, []int{7}
+}
+func (m *MsgDeleteDomainResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgDeleteDomainResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgDeleteDomainResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgDeleteDomainResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgDeleteDomainResponse.Merge(m, src)
+}
+func (m *MsgDeleteDomainResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgDeleteDomainResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgDeleteDomainResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgDeleteDomainResponse proto.InternalMessageInfo
+
+// MsgTransferDomain defines the MsgTransferDomain message.
+type MsgTransferDomain struct {
+	Creator  string `protobuf:"bytes,1,opt,name=creator,proto3" json:"creator,omitempty"`
+	Id       uint64 `protobuf:"varint,2,opt,name=id,proto3" json:"id,omitempty"`
+	NewOwner string `protobuf:"bytes,3,opt,name=new_owner,json=newOwner,proto3" json:"new_owner,omitempty"`
+}
+
+func (m *MsgTransferDomain) Reset()         { *m = MsgTransferDomain{} }
+func (m *MsgTransferDomain) String() string { return proto.CompactTextString(m) }
+func (*MsgTransferDomain) ProtoMessage()    {}
+func (*MsgTransferDomain) Descriptor() ([]byte, []int) {
+	return fileDescriptor_a7ae1cda1295308e, []int{8}
+}
+func (m *MsgTransferDomain) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgTransferDomain) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgTransferDomain.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgTransferDomain) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgTransferDomain.Merge(m, src)
+}
+func (m *MsgTransferDomain) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgTransferDomain) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgTransferDomain.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgTransferDomain proto.InternalMessageInfo
+
+func (m *MsgTransferDomain) GetCreator() string {
+	if m != nil {
+		return m.Creator
+	}
+	return ""
+}
+
+func (m *MsgTransferDomain) GetId() uint64 {
+	if m != nil {
+		return m.Id
+	}
+	return 0
+}
+
+func (m *MsgTransferDomain) GetNewOwner() string {
+	if m != nil {
+		return m.NewOwner
+	}
+	return ""
+}
+
+// MsgTransferDomainResponse defines the MsgTransferDomainResponse message.
+type MsgTransferDomainResponse struct {
+}
+
+func (m *MsgTransferDomainResponse) Reset()         { *m = MsgTransferDomainResponse{} }
+func (m *MsgTransferDomainResponse) String() string { return proto.CompactTextString(m) }
+func (*MsgTransferDomainResponse) ProtoMessage()    {}
+func (*MsgTransferDomainResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_a7ae1cda1295308e, []int{9}
+}
+func (m *MsgTransferDomainResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgTransferDomainResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgTransferDomainResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgTransferDomainResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgTransferDomainResponse.Merge(m, src)
+}
+func (m *MsgTransferDomainResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgTransferDomainResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgTransferDomainResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgTransferDomainResponse proto.InternalMessageInfo
+
+// MsgHeartbeatDomain defines the MsgHeartbeatDomain message.
+type MsgHeartbeatDomain struct {
+	Creator string `protobuf:"bytes,1,opt,name=creator,proto3" json:"creator,omitempty"`
+	Id      uint64 `protobuf:"varint,2,opt,name=id,proto3" json:"id,omitempty"`
+}
+
+func (m *MsgHeartbeatDomain) Reset()         { *m = MsgHeartbeatDomain{} }
+func (m *MsgHeartbeatDomain) String() string { return proto.CompactTextString(m) }
+func (*MsgHeartbeatDomain) ProtoMessage()    {}
+func (*MsgHeartbeatDomain) Descriptor() ([]byte, []int) {
+	return fileDescriptor_a7ae1cda1295308e, []int{10}
+}
+func (m *MsgHeartbeatDomain) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgHeartbeatDomain) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgHeartbeatDomain.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgHeartbeatDomain) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgHeartbeatDomain.Merge(m, src)
+}
+func (m *MsgHeartbeatDomain) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgHeartbeatDomain) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgHeartbeatDomain.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgHeartbeatDomain proto.InternalMessageInfo
+
+func (m *MsgHeartbeatDomain) GetCreator() string {
+	if m != nil {
+		return m.Creator
+	}
+	return ""
+}
+
+func (m *MsgHeartbeatDomain) GetId() uint64 {
+	if m != nil {
+		return m.Id
+	}
+	return 0
+}
+
+// MsgHeartbeatDomainResponse defines the MsgHeartbeatDomainResponse message.
+type MsgHeartbeatDomainResponse struct {
+}
+
+func (m *MsgHeartbeatDomainResponse) Reset()         { *m = MsgHeartbeatDomainResponse{} }
+func (m *MsgHeartbeatDomainResponse) String() string { return proto.CompactTextString(m) }
+func (*MsgHeartbeatDomainResponse) ProtoMessage()    {}
+func (*MsgHeartbeatDomainResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_a7ae1cda1295308e, []int{11}
+}
+func (m *MsgHeartbeatDomainResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgHeartbeatDomainResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgHeartbeatDomainResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgHeartbeatDomainResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgHeartbeatDomainResponse.Merge(m, src)
+}
+func (m *MsgHeartbeatDomainResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgHeartbeatDomainResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgHeartbeatDomainResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgHeartbeatDomainResponse proto.InternalMessageInfo
+
 func init() {
 	proto.RegisterType((*MsgUpdateParams)(nil), "dnsblockchain.dnsblockchain.v1.MsgUpdateParams")
 	proto.RegisterType((*MsgUpdateParamsResponse)(nil), "dnsblockchain.dnsblockchain.v1.MsgUpdateParamsResponse")
+	proto.RegisterType((*MsgCreateDomain)(nil), "dnsblockchain.dnsblockchain.v1.MsgCreateDomain")
+	proto.RegisterType((*MsgCreateDomainResponse)(nil), "dnsblockchain.dnsblockchain.v1.MsgCreateDomainResponse")
+	proto.RegisterType((*MsgUpdateDomain)(nil), "dnsblockchain.dnsblockchain.v1.MsgUpdateDomain")
+	proto.RegisterType((*MsgUpdateDomainResponse)(nil), "dnsblockchain.dnsblockchain.v1.MsgUpdateDomainResponse")
+	proto.RegisterType((*MsgDeleteDomain)(nil), "dnsblockchain.dnsblockchain.v1.MsgDeleteDomain")
+	proto.RegisterType((*MsgDeleteDomainResponse)(nil), "dnsblockchain.dnsblockchain.v1.MsgDeleteDomainResponse")
+	proto.RegisterType((*MsgTransferDomain)(nil), "dnsblockchain.dnsblockchain.v1.MsgTransferDomain")
+	proto.RegisterType((*MsgTransferDomainResponse)(nil), "dnsblockchain.dnsblockchain.v1.MsgTransferDomainResponse")
+	proto.RegisterType((*MsgHeartbeatDomain)(nil), "dnsblockchain.dnsblockchain.v1.MsgHeartbeatDomain")
+	proto.RegisterType((*MsgHeartbeatDomainResponse)(nil), "dnsblockchain.dnsblockchain.v1.MsgHeartbeatDomainResponse")
 }
 
 func init() {
@@ -136,28 +658,47 @@ func init() {
 }
 
 var fileDescriptor_a7ae1cda1295308e = []byte{
-	// 330 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0x52, 0x4f, 0xc9, 0x2b, 0x4e,
-	0xca, 0xc9, 0x4f, 0xce, 0x4e, 0xce, 0x48, 0xcc, 0xcc, 0xd3, 0x47, 0xe5, 0x95, 0x19, 0xea, 0x97,
-	0x54, 0xe8, 0x15, 0x14, 0xe5, 0x97, 0xe4, 0x0b, 0xc9, 0xa1, 0x48, 0xe9, 0xa1, 0xf2, 0xca, 0x0c,
-	0xa5, 0x04, 0x13, 0x73, 0x33, 0xf3, 0xf2, 0xf5, 0xc1, 0x24, 0x44, 0x8b, 0x94, 0x78, 0x72, 0x7e,
-	0x71, 0x6e, 0x7e, 0xb1, 0x7e, 0x6e, 0x71, 0x3a, 0xc8, 0xa8, 0xdc, 0xe2, 0x74, 0xa8, 0x84, 0x24,
-	0x44, 0x22, 0x1e, 0xcc, 0xd3, 0x87, 0x70, 0xa0, 0x52, 0xda, 0x04, 0xdc, 0x53, 0x90, 0x58, 0x94,
-	0x98, 0x0b, 0x53, 0x2c, 0x92, 0x9e, 0x9f, 0x9e, 0x0f, 0x31, 0x04, 0xc4, 0x82, 0x88, 0x2a, 0x5d,
-	0x63, 0xe4, 0xe2, 0xf7, 0x2d, 0x4e, 0x0f, 0x2d, 0x48, 0x49, 0x2c, 0x49, 0x0d, 0x00, 0xab, 0x17,
-	0x32, 0xe3, 0xe2, 0x4c, 0x2c, 0x2d, 0xc9, 0xc8, 0x2f, 0xca, 0x2c, 0xa9, 0x94, 0x60, 0x54, 0x60,
-	0xd4, 0xe0, 0x74, 0x92, 0xb8, 0xb4, 0x45, 0x57, 0x04, 0x6a, 0xb7, 0x63, 0x4a, 0x4a, 0x51, 0x6a,
-	0x71, 0x71, 0x70, 0x49, 0x51, 0x66, 0x5e, 0x7a, 0x10, 0x42, 0xa9, 0x90, 0x27, 0x17, 0x1b, 0xc4,
-	0x46, 0x09, 0x26, 0x05, 0x46, 0x0d, 0x6e, 0x23, 0x35, 0x3d, 0xfc, 0xc1, 0xa0, 0x07, 0xb1, 0xcf,
-	0x89, 0xf3, 0xc4, 0x3d, 0x79, 0x86, 0x15, 0xcf, 0x37, 0x68, 0x31, 0x06, 0x41, 0x0d, 0xb0, 0x72,
-	0x68, 0x7a, 0xbe, 0x41, 0x0b, 0x61, 0x74, 0xd7, 0xf3, 0x0d, 0x5a, 0xba, 0xa8, 0xde, 0xab, 0x40,
-	0xf3, 0x2e, 0x9a, 0x27, 0x94, 0x24, 0xb9, 0xc4, 0xd1, 0x84, 0x82, 0x52, 0x8b, 0x0b, 0xf2, 0xf3,
-	0x8a, 0x53, 0x8d, 0xda, 0x18, 0xb9, 0x98, 0x7d, 0x8b, 0xd3, 0x85, 0x2a, 0xb8, 0x78, 0x50, 0xfc,
-	0xad, 0x4f, 0xc8, 0xbd, 0x68, 0x06, 0x4a, 0x99, 0x93, 0xa8, 0x01, 0xe6, 0x02, 0x29, 0xd6, 0x06,
-	0x90, 0x6f, 0x9d, 0x6c, 0x4f, 0x3c, 0x92, 0x63, 0xbc, 0xf0, 0x48, 0x8e, 0xf1, 0xc1, 0x23, 0x39,
-	0xc6, 0x09, 0x8f, 0xe5, 0x18, 0x2e, 0x3c, 0x96, 0x63, 0xb8, 0xf1, 0x58, 0x8e, 0x21, 0x4a, 0x19,
-	0xbf, 0x67, 0x4b, 0x2a, 0x0b, 0x52, 0x8b, 0x93, 0xd8, 0xc0, 0x51, 0x68, 0x0c, 0x08, 0x00, 0x00,
-	0xff, 0xff, 0xcf, 0x5e, 0xb6, 0x28, 0x97, 0x02, 0x00, 0x00,
+	// 627 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xb4, 0x55, 0xbf, 0x6e, 0xd3, 0x40,
+	0x18, 0x8f, 0xd3, 0xa4, 0x90, 0x23, 0x6a, 0xd5, 0x53, 0xa4, 0x3a, 0x06, 0x99, 0xc8, 0x48, 0x10,
+	0x82, 0x1a, 0x2b, 0x41, 0x80, 0x88, 0x84, 0x04, 0xa1, 0x03, 0x0c, 0x11, 0xc8, 0xc0, 0xc2, 0x52,
+	0x5d, 0xe2, 0xab, 0x6b, 0x51, 0xdf, 0x59, 0x77, 0xa6, 0x49, 0x17, 0x04, 0x8c, 0x4c, 0x3c, 0x00,
+	0x0f, 0x00, 0x03, 0x52, 0x06, 0x1e, 0xa2, 0x63, 0xc5, 0x80, 0x98, 0x10, 0x4a, 0x86, 0xbc, 0x02,
+	0x23, 0xb2, 0x1d, 0xa7, 0xb6, 0x13, 0x25, 0x8e, 0xda, 0x2e, 0x91, 0xbf, 0xbb, 0xef, 0xf7, 0xef,
+	0x9c, 0xcf, 0x07, 0x6e, 0xe8, 0x84, 0xb7, 0xf7, 0x69, 0xe7, 0x4d, 0x67, 0x0f, 0x99, 0x44, 0x8d,
+	0x56, 0x07, 0x35, 0xd5, 0xe9, 0x55, 0x6d, 0x46, 0x1d, 0x0a, 0xe5, 0xc8, 0x56, 0x35, 0x5a, 0x1d,
+	0xd4, 0xa4, 0x0d, 0x64, 0x99, 0x84, 0xaa, 0xde, 0xaf, 0x0f, 0x91, 0x36, 0x3b, 0x94, 0x5b, 0x94,
+	0xab, 0x16, 0x37, 0x5c, 0x2a, 0x8b, 0x1b, 0xe3, 0x8d, 0xa2, 0xbf, 0xb1, 0xe3, 0x55, 0xaa, 0x5f,
+	0x8c, 0xb7, 0x6e, 0x2d, 0xf0, 0x63, 0x23, 0x86, 0xac, 0xa0, 0xb9, 0x60, 0x50, 0x83, 0xfa, 0x24,
+	0xee, 0x93, 0xbf, 0xaa, 0xfc, 0x12, 0xc0, 0x7a, 0x8b, 0x1b, 0xaf, 0x6c, 0x1d, 0x39, 0xf8, 0xb9,
+	0xd7, 0x0f, 0xef, 0x82, 0x1c, 0x7a, 0xeb, 0xec, 0x51, 0x66, 0x3a, 0x87, 0xa2, 0x50, 0x12, 0xca,
+	0xb9, 0xa6, 0xf8, 0xf3, 0xc7, 0x56, 0x61, 0xac, 0xfd, 0x48, 0xd7, 0x19, 0xe6, 0xfc, 0x85, 0xc3,
+	0x4c, 0x62, 0x68, 0x27, 0xad, 0xf0, 0x29, 0x58, 0xf5, 0x15, 0xc5, 0x74, 0x49, 0x28, 0x5f, 0xaa,
+	0x5f, 0xaf, 0xce, 0x3f, 0x86, 0xaa, 0xaf, 0xd7, 0xcc, 0x1d, 0xfd, 0xb9, 0x9a, 0xfa, 0x3a, 0xea,
+	0x57, 0x04, 0x6d, 0x4c, 0xd0, 0x78, 0xf8, 0x71, 0xd4, 0xaf, 0x9c, 0x50, 0x7f, 0x1a, 0xf5, 0x2b,
+	0x5b, 0xd1, 0x78, 0xbd, 0x58, 0xdc, 0x58, 0x08, 0xa5, 0x08, 0x36, 0x63, 0x4b, 0x1a, 0xe6, 0x36,
+	0x25, 0x1c, 0x2b, 0xdf, 0xfd, 0xcc, 0x8f, 0x19, 0x46, 0x0e, 0xde, 0xa6, 0x16, 0x32, 0x09, 0xac,
+	0x83, 0x0b, 0x1d, 0xb7, 0xa6, 0x6c, 0x61, 0xe2, 0xa0, 0x11, 0x42, 0x90, 0x21, 0xc8, 0xc2, 0x5e,
+	0xda, 0x9c, 0xe6, 0x3d, 0xc3, 0x02, 0xc8, 0xd2, 0x2e, 0xc1, 0x4c, 0x5c, 0xf1, 0x16, 0xfd, 0x02,
+	0xca, 0x00, 0xe0, 0x9e, 0x6d, 0x32, 0xe4, 0x98, 0x94, 0x88, 0x99, 0x92, 0x50, 0xce, 0x68, 0xa1,
+	0x15, 0xb8, 0x06, 0xd2, 0x84, 0x8b, 0x59, 0x0f, 0x92, 0x26, 0xbc, 0x91, 0x77, 0xe3, 0x07, 0x3a,
+	0xca, 0x4d, 0x2f, 0x4a, 0xd8, 0x6e, 0x10, 0xc5, 0x05, 0x9a, 0xba, 0xe7, 0x38, 0xa3, 0xa5, 0x4d,
+	0x5d, 0xf9, 0x16, 0x7e, 0x9d, 0xa7, 0x88, 0xe6, 0xf3, 0xa6, 0x03, 0xde, 0x73, 0x89, 0x15, 0x7e,
+	0x43, 0xd1, 0x58, 0x4a, 0xc7, 0x4b, 0xb1, 0x8d, 0xf7, 0xf1, 0x59, 0xa6, 0x98, 0xa9, 0x1f, 0x16,
+	0x99, 0xe8, 0x7f, 0x11, 0xc0, 0x46, 0x8b, 0x1b, 0x2f, 0x19, 0x22, 0x7c, 0x17, 0xb3, 0x33, 0x3c,
+	0xc8, 0x3b, 0x20, 0x47, 0x70, 0x77, 0x27, 0x74, 0x98, 0x73, 0x58, 0x2e, 0x12, 0xdc, 0x7d, 0xe6,
+	0x76, 0xc6, 0x9c, 0x5f, 0x06, 0xc5, 0x29, 0x77, 0x13, 0xef, 0xbb, 0x00, 0xb6, 0xb8, 0xf1, 0x04,
+	0x23, 0xe6, 0xb4, 0x31, 0x72, 0xce, 0xed, 0xf8, 0xae, 0x00, 0x69, 0x5a, 0x27, 0x70, 0x51, 0xff,
+	0x97, 0x05, 0x2b, 0x2d, 0x6e, 0xc0, 0x1e, 0xc8, 0x47, 0xbe, 0x2d, 0xea, 0xa2, 0x6f, 0x42, 0x6c,
+	0x68, 0xa5, 0x7b, 0x4b, 0x02, 0x26, 0xa3, 0xd1, 0x03, 0xf9, 0xc8, 0x84, 0x27, 0x51, 0x0e, 0x03,
+	0x12, 0x29, 0xcf, 0x1c, 0xca, 0x49, 0xe6, 0x25, 0x94, 0xc3, 0x80, 0x25, 0x32, 0x4f, 0x2b, 0x47,
+	0x86, 0x26, 0x89, 0x72, 0x18, 0x90, 0x48, 0x79, 0xd6, 0xc4, 0xc0, 0x77, 0x60, 0x2d, 0x36, 0x2d,
+	0xb5, 0x04, 0x54, 0x51, 0x88, 0x74, 0x7f, 0x69, 0xc8, 0x44, 0xff, 0x83, 0x00, 0xd6, 0xa7, 0xfe,
+	0xf3, 0x09, 0xe8, 0x62, 0x18, 0xa9, 0xb1, 0x3c, 0x26, 0xf0, 0x20, 0x65, 0xdf, 0xbb, 0x77, 0x58,
+	0xf3, 0xc1, 0xd1, 0x40, 0x16, 0x8e, 0x07, 0xb2, 0xf0, 0x77, 0x20, 0x0b, 0x9f, 0x87, 0x72, 0xea,
+	0x78, 0x28, 0xa7, 0x7e, 0x0f, 0xe5, 0xd4, 0xeb, 0x6b, 0xf3, 0xaf, 0x30, 0xe7, 0xd0, 0xc6, 0xbc,
+	0xbd, 0xea, 0x5d, 0xcc, 0xb7, 0xff, 0x07, 0x00, 0x00, 0xff, 0xff, 0xaa, 0xdb, 0x5b, 0x95, 0x6d,
+	0x08, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -175,6 +716,16 @@ type MsgClient interface {
 	// UpdateParams defines a (governance) operation for updating the module
 	// parameters. The authority defaults to the x/gov module account.
 	UpdateParams(ctx context.Context, in *MsgUpdateParams, opts ...grpc.CallOption) (*MsgUpdateParamsResponse, error)
+	// CreateDomain defines the CreateDomain RPC.
+	CreateDomain(ctx context.Context, in *MsgCreateDomain, opts ...grpc.CallOption) (*MsgCreateDomainResponse, error)
+	// UpdateDomain defines the UpdateDomain RPC.
+	UpdateDomain(ctx context.Context, in *MsgUpdateDomain, opts ...grpc.CallOption) (*MsgUpdateDomainResponse, error)
+	// DeleteDomain defines the DeleteDomain RPC.
+	DeleteDomain(ctx context.Context, in *MsgDeleteDomain, opts ...grpc.CallOption) (*MsgDeleteDomainResponse, error)
+	// TransferDomain defines the TransferDomain RPC.
+	TransferDomain(ctx context.Context, in *MsgTransferDomain, opts ...grpc.CallOption) (*MsgTransferDomainResponse, error)
+	// HeartbeatDomain defines the HeartbeatDomain RPC.
+	HeartbeatDomain(ctx context.Context, in *MsgHeartbeatDomain, opts ...grpc.CallOption) (*MsgHeartbeatDomainResponse, error)
 }
 
 type msgClient struct {
@@ -194,11 +745,66 @@ func (c *msgClient) UpdateParams(ctx context.Context, in *MsgUpdateParams, opts 
 	return out, nil
 }
 
+func (c *msgClient) CreateDomain(ctx context.Context, in *MsgCreateDomain, opts ...grpc.CallOption) (*MsgCreateDomainResponse, error) {
+	out := new(MsgCreateDomainResponse)
+	err := c.cc.Invoke(ctx, "/dnsblockchain.dnsblockchain.v1.Msg/CreateDomain", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgClient) UpdateDomain(ctx context.Context, in *MsgUpdateDomain, opts ...grpc.CallOption) (*MsgUpdateDomainResponse, error) {
+	out := new(MsgUpdateDomainResponse)
+	err := c.cc.Invoke(ctx, "/dnsblockchain.dnsblockchain.v1.Msg/UpdateDomain", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgClient) DeleteDomain(ctx context.Context, in *MsgDeleteDomain, opts ...grpc.CallOption) (*MsgDeleteDomainResponse, error) {
+	out := new(MsgDeleteDomainResponse)
+	err := c.cc.Invoke(ctx, "/dnsblockchain.dnsblockchain.v1.Msg/DeleteDomain", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgClient) TransferDomain(ctx context.Context, in *MsgTransferDomain, opts ...grpc.CallOption) (*MsgTransferDomainResponse, error) {
+	out := new(MsgTransferDomainResponse)
+	err := c.cc.Invoke(ctx, "/dnsblockchain.dnsblockchain.v1.Msg/TransferDomain", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgClient) HeartbeatDomain(ctx context.Context, in *MsgHeartbeatDomain, opts ...grpc.CallOption) (*MsgHeartbeatDomainResponse, error) {
+	out := new(MsgHeartbeatDomainResponse)
+	err := c.cc.Invoke(ctx, "/dnsblockchain.dnsblockchain.v1.Msg/HeartbeatDomain", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MsgServer is the server API for Msg service.
 type MsgServer interface {
 	// UpdateParams defines a (governance) operation for updating the module
 	// parameters. The authority defaults to the x/gov module account.
 	UpdateParams(context.Context, *MsgUpdateParams) (*MsgUpdateParamsResponse, error)
+	// CreateDomain defines the CreateDomain RPC.
+	CreateDomain(context.Context, *MsgCreateDomain) (*MsgCreateDomainResponse, error)
+	// UpdateDomain defines the UpdateDomain RPC.
+	UpdateDomain(context.Context, *MsgUpdateDomain) (*MsgUpdateDomainResponse, error)
+	// DeleteDomain defines the DeleteDomain RPC.
+	DeleteDomain(context.Context, *MsgDeleteDomain) (*MsgDeleteDomainResponse, error)
+	// TransferDomain defines the TransferDomain RPC.
+	TransferDomain(context.Context, *MsgTransferDomain) (*MsgTransferDomainResponse, error)
+	// HeartbeatDomain defines the HeartbeatDomain RPC.
+	HeartbeatDomain(context.Context, *MsgHeartbeatDomain) (*MsgHeartbeatDomainResponse, error)
 }
 
 // UnimplementedMsgServer can be embedded to have forward compatible implementations.
@@ -207,6 +813,21 @@ type UnimplementedMsgServer struct {
 
 func (*UnimplementedMsgServer) UpdateParams(ctx context.Context, req *MsgUpdateParams) (*MsgUpdateParamsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateParams not implemented")
+}
+func (*UnimplementedMsgServer) CreateDomain(ctx context.Context, req *MsgCreateDomain) (*MsgCreateDomainResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateDomain not implemented")
+}
+func (*UnimplementedMsgServer) UpdateDomain(ctx context.Context, req *MsgUpdateDomain) (*MsgUpdateDomainResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateDomain not implemented")
+}
+func (*UnimplementedMsgServer) DeleteDomain(ctx context.Context, req *MsgDeleteDomain) (*MsgDeleteDomainResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteDomain not implemented")
+}
+func (*UnimplementedMsgServer) TransferDomain(ctx context.Context, req *MsgTransferDomain) (*MsgTransferDomainResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method TransferDomain not implemented")
+}
+func (*UnimplementedMsgServer) HeartbeatDomain(ctx context.Context, req *MsgHeartbeatDomain) (*MsgHeartbeatDomainResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method HeartbeatDomain not implemented")
 }
 
 func RegisterMsgServer(s grpc1.Server, srv MsgServer) {
@@ -231,6 +852,96 @@ func _Msg_UpdateParams_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Msg_CreateDomain_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgCreateDomain)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).CreateDomain(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dnsblockchain.dnsblockchain.v1.Msg/CreateDomain",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).CreateDomain(ctx, req.(*MsgCreateDomain))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Msg_UpdateDomain_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgUpdateDomain)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).UpdateDomain(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dnsblockchain.dnsblockchain.v1.Msg/UpdateDomain",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).UpdateDomain(ctx, req.(*MsgUpdateDomain))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Msg_DeleteDomain_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgDeleteDomain)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).DeleteDomain(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dnsblockchain.dnsblockchain.v1.Msg/DeleteDomain",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).DeleteDomain(ctx, req.(*MsgDeleteDomain))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Msg_TransferDomain_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgTransferDomain)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).TransferDomain(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dnsblockchain.dnsblockchain.v1.Msg/TransferDomain",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).TransferDomain(ctx, req.(*MsgTransferDomain))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Msg_HeartbeatDomain_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgHeartbeatDomain)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).HeartbeatDomain(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dnsblockchain.dnsblockchain.v1.Msg/HeartbeatDomain",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).HeartbeatDomain(ctx, req.(*MsgHeartbeatDomain))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var Msg_serviceDesc = _Msg_serviceDesc
 var _Msg_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "dnsblockchain.dnsblockchain.v1.Msg",
@@ -239,6 +950,26 @@ var _Msg_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateParams",
 			Handler:    _Msg_UpdateParams_Handler,
+		},
+		{
+			MethodName: "CreateDomain",
+			Handler:    _Msg_CreateDomain_Handler,
+		},
+		{
+			MethodName: "UpdateDomain",
+			Handler:    _Msg_UpdateDomain_Handler,
+		},
+		{
+			MethodName: "DeleteDomain",
+			Handler:    _Msg_DeleteDomain_Handler,
+		},
+		{
+			MethodName: "TransferDomain",
+			Handler:    _Msg_TransferDomain_Handler,
+		},
+		{
+			MethodName: "HeartbeatDomain",
+			Handler:    _Msg_HeartbeatDomain_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -308,6 +1039,348 @@ func (m *MsgUpdateParamsResponse) MarshalToSizedBuffer(dAtA []byte) (int, error)
 	return len(dAtA) - i, nil
 }
 
+func (m *MsgCreateDomain) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgCreateDomain) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgCreateDomain) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Ns) > 0 {
+		i -= len(m.Ns)
+		copy(dAtA[i:], m.Ns)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Ns)))
+		i--
+		dAtA[i] = 0x2a
+	}
+	if m.Expiration != 0 {
+		i = encodeVarintTx(dAtA, i, uint64(m.Expiration))
+		i--
+		dAtA[i] = 0x20
+	}
+	if len(m.Owner) > 0 {
+		i -= len(m.Owner)
+		copy(dAtA[i:], m.Owner)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Owner)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.Name) > 0 {
+		i -= len(m.Name)
+		copy(dAtA[i:], m.Name)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Name)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Creator) > 0 {
+		i -= len(m.Creator)
+		copy(dAtA[i:], m.Creator)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Creator)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgCreateDomainResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgCreateDomainResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgCreateDomainResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Id != 0 {
+		i = encodeVarintTx(dAtA, i, uint64(m.Id))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgUpdateDomain) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgUpdateDomain) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgUpdateDomain) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Ns) > 0 {
+		i -= len(m.Ns)
+		copy(dAtA[i:], m.Ns)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Ns)))
+		i--
+		dAtA[i] = 0x2a
+	}
+	if m.Expiration != 0 {
+		i = encodeVarintTx(dAtA, i, uint64(m.Expiration))
+		i--
+		dAtA[i] = 0x20
+	}
+	if len(m.Owner) > 0 {
+		i -= len(m.Owner)
+		copy(dAtA[i:], m.Owner)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Owner)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if m.Id != 0 {
+		i = encodeVarintTx(dAtA, i, uint64(m.Id))
+		i--
+		dAtA[i] = 0x10
+	}
+	if len(m.Creator) > 0 {
+		i -= len(m.Creator)
+		copy(dAtA[i:], m.Creator)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Creator)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgUpdateDomainResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgUpdateDomainResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgUpdateDomainResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgDeleteDomain) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgDeleteDomain) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgDeleteDomain) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Id != 0 {
+		i = encodeVarintTx(dAtA, i, uint64(m.Id))
+		i--
+		dAtA[i] = 0x10
+	}
+	if len(m.Creator) > 0 {
+		i -= len(m.Creator)
+		copy(dAtA[i:], m.Creator)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Creator)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgDeleteDomainResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgDeleteDomainResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgDeleteDomainResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgTransferDomain) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgTransferDomain) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgTransferDomain) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.NewOwner) > 0 {
+		i -= len(m.NewOwner)
+		copy(dAtA[i:], m.NewOwner)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.NewOwner)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if m.Id != 0 {
+		i = encodeVarintTx(dAtA, i, uint64(m.Id))
+		i--
+		dAtA[i] = 0x10
+	}
+	if len(m.Creator) > 0 {
+		i -= len(m.Creator)
+		copy(dAtA[i:], m.Creator)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Creator)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgTransferDomainResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgTransferDomainResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgTransferDomainResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgHeartbeatDomain) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgHeartbeatDomain) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgHeartbeatDomain) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Id != 0 {
+		i = encodeVarintTx(dAtA, i, uint64(m.Id))
+		i--
+		dAtA[i] = 0x10
+	}
+	if len(m.Creator) > 0 {
+		i -= len(m.Creator)
+		copy(dAtA[i:], m.Creator)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Creator)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgHeartbeatDomainResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgHeartbeatDomainResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgHeartbeatDomainResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	return len(dAtA) - i, nil
+}
+
 func encodeVarintTx(dAtA []byte, offset int, v uint64) int {
 	offset -= sovTx(v)
 	base := offset
@@ -335,6 +1408,161 @@ func (m *MsgUpdateParams) Size() (n int) {
 }
 
 func (m *MsgUpdateParamsResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	return n
+}
+
+func (m *MsgCreateDomain) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Creator)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = len(m.Name)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = len(m.Owner)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	if m.Expiration != 0 {
+		n += 1 + sovTx(uint64(m.Expiration))
+	}
+	l = len(m.Ns)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	return n
+}
+
+func (m *MsgCreateDomainResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Id != 0 {
+		n += 1 + sovTx(uint64(m.Id))
+	}
+	return n
+}
+
+func (m *MsgUpdateDomain) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Creator)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	if m.Id != 0 {
+		n += 1 + sovTx(uint64(m.Id))
+	}
+	l = len(m.Owner)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	if m.Expiration != 0 {
+		n += 1 + sovTx(uint64(m.Expiration))
+	}
+	l = len(m.Ns)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	return n
+}
+
+func (m *MsgUpdateDomainResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	return n
+}
+
+func (m *MsgDeleteDomain) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Creator)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	if m.Id != 0 {
+		n += 1 + sovTx(uint64(m.Id))
+	}
+	return n
+}
+
+func (m *MsgDeleteDomainResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	return n
+}
+
+func (m *MsgTransferDomain) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Creator)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	if m.Id != 0 {
+		n += 1 + sovTx(uint64(m.Id))
+	}
+	l = len(m.NewOwner)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	return n
+}
+
+func (m *MsgTransferDomainResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	return n
+}
+
+func (m *MsgHeartbeatDomain) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Creator)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	if m.Id != 0 {
+		n += 1 + sovTx(uint64(m.Id))
+	}
+	return n
+}
+
+func (m *MsgHeartbeatDomainResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -491,6 +1719,991 @@ func (m *MsgUpdateParamsResponse) Unmarshal(dAtA []byte) error {
 		}
 		if fieldNum <= 0 {
 			return fmt.Errorf("proto: MsgUpdateParamsResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgCreateDomain) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgCreateDomain: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgCreateDomain: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Creator", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Creator = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Name", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Name = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Owner", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Owner = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 4:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Expiration", wireType)
+			}
+			m.Expiration = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Expiration |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 5:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Ns", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Ns = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgCreateDomainResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgCreateDomainResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgCreateDomainResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Id", wireType)
+			}
+			m.Id = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Id |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgUpdateDomain) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgUpdateDomain: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgUpdateDomain: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Creator", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Creator = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Id", wireType)
+			}
+			m.Id = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Id |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Owner", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Owner = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 4:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Expiration", wireType)
+			}
+			m.Expiration = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Expiration |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 5:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Ns", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Ns = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgUpdateDomainResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgUpdateDomainResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgUpdateDomainResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgDeleteDomain) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgDeleteDomain: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgDeleteDomain: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Creator", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Creator = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Id", wireType)
+			}
+			m.Id = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Id |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgDeleteDomainResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgDeleteDomainResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgDeleteDomainResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgTransferDomain) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgTransferDomain: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgTransferDomain: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Creator", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Creator = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Id", wireType)
+			}
+			m.Id = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Id |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NewOwner", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.NewOwner = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgTransferDomainResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgTransferDomainResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgTransferDomainResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgHeartbeatDomain) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgHeartbeatDomain: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgHeartbeatDomain: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Creator", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Creator = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Id", wireType)
+			}
+			m.Id = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Id |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgHeartbeatDomainResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgHeartbeatDomainResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgHeartbeatDomainResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		default:

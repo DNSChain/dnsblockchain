@@ -1,7 +1,9 @@
 syntax = "proto3";
+
 package dnsblockchain.dnsblockchain.v1;
 
 import "amino/amino.proto";
+import "dnsblockchain/dnsblockchain/v1/domain.proto";
 import "dnsblockchain/dnsblockchain/v1/params.proto";
 import "gogoproto/gogo.proto";
 
@@ -14,4 +16,6 @@ message GenesisState {
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
+  repeated Domain domain_list = 2 [(gogoproto.nullable) = false];
+  uint64 domain_count = 3;
 }
