@@ -5,12 +5,12 @@ import (
 	"fmt"
 
 	"cosmossdk.io/collections"
-	"cosmossdk.io/errors"
+	errorsmod "cosmossdk.io/errors"
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
-	// govtypes "github.com/cosmos/cosmos-sdk/x/gov/types" // Para tipos de eventos si es necesario, asegúrate de usar la versión correcta
+	// govtypes "github.com/cosmos/cosmos-sdk/x/gov/types" // Para tipos de eventos si es necesario
 
 	"dnsblockchain/x/dao/types"
 )
@@ -24,7 +24,7 @@ func (k Keeper) EndBlocker(ctx context.Context) error {
 
 	params, err := k.Params.Get(ctx)
 	if err != nil {
-		return errors.Wrap(err, "failed to get dao params in EndBlocker")
+		return errorsmod.Wrap(err, "failed to get dao params in EndBlocker")
 	}
 
 	var proposalsToProcess []types.Proposal
@@ -37,7 +37,7 @@ func (k Keeper) EndBlocker(ctx context.Context) error {
 	})
 	if err != nil {
 		logger.Error("Error walking proposals in EndBlocker", "error", err)
-		return errors.Wrap(err, "failed to iterate proposals")
+		return errorsmod.Wrap(err, "failed to iterate proposals")
 	}
 
 	for _, proposal := range proposalsToProcess {
@@ -85,21 +85,18 @@ func (k Keeper) EndBlocker(ctx context.Context) error {
 		} else {
 			totalVotesNonAbstain := yesVotes.Add(noVotes)
 			if totalVotesNonAbstain.IsPositive() {
-				// Convertir math.Int a math.LegacyDec para la división
-				// math.LegacyDec tiene el método Quo para división decimal.
-				yesDec, err := math.LegacyNewDecFromStr(yesVotes.String())
-				if err != nil {
-					logger.Error("Error converting yesVotes to LegacyDec", "proposalID", proposal.Id, "error", err)
-					// Manejar el error, quizás marcar la propuesta como fallida
+				yesDec, convErr := math.LegacyNewDecFromStr(yesVotes.String())
+				if convErr != nil {
+					logger.Error("Error converting yesVotes to LegacyDec", "proposalID", proposal.Id, "error", convErr)
 					proposal.Status = types.ProposalStatus_PROPOSAL_STATUS_FAILED
 					if setErr := k.SetProposal(sdkCtx, proposal); setErr != nil {
 						logger.Error("Failed to set proposal to FAILED after dec conversion error", "proposalID", proposal.Id, "error", setErr)
 					}
 					continue
 				}
-				totalNonAbstainDec, err := math.LegacyNewDecFromStr(totalVotesNonAbstain.String())
-				if err != nil {
-					logger.Error("Error converting totalVotesNonAbstain to LegacyDec", "proposalID", proposal.Id, "error", err)
+				totalNonAbstainDec, convErr := math.LegacyNewDecFromStr(totalVotesNonAbstain.String())
+				if convErr != nil {
+					logger.Error("Error converting totalVotesNonAbstain to LegacyDec", "proposalID", proposal.Id, "error", convErr)
 					proposal.Status = types.ProposalStatus_PROPOSAL_STATUS_FAILED
 					if setErr := k.SetProposal(sdkCtx, proposal); setErr != nil {
 						logger.Error("Failed to set proposal to FAILED after dec conversion error", "proposalID", proposal.Id, "error", setErr)
@@ -107,47 +104,82 @@ func (k Keeper) EndBlocker(ctx context.Context) error {
 					continue
 				}
 
-				// params.MinYesThresholdPercent ya es math.LegacyDec
 				minThresholdDec := params.MinYesThresholdPercent
 
-				if !totalNonAbstainDec.IsZero() { // Comprobar de nuevo antes de la división
+				if !totalNonAbstainDec.IsZero() {
 					percentageYes := yesDec.Quo(totalNonAbstainDec)
-					if percentageYes.GTE(minThresholdDec) { // GTE es el método correcto para math.LegacyDec
+					if percentageYes.GTE(minThresholdDec) {
 						passed = true
 					}
 					logger.Info("Proposal tally", "proposalID", proposal.Id, "yes", yesVotes.String(), "no", noVotes.String(), "abstain", abstainVotes.String(), "percentageYes", percentageYes.String(), "threshold", minThresholdDec.String(), "passed", passed)
 				} else {
 					logger.Info("No YES/NO votes cast (totalNonAbstainDec is zero)", "proposalID", proposal.Id)
 				}
-
 			} else {
 				logger.Info("No YES/NO votes cast for proposal", "proposalID", proposal.Id)
 			}
+		}
+
+		depositToHandle := params.ProposalSubmissionDeposit // Depósito general por defecto
+		var proposalContent types.ProposalContent
+		isAddTld := false
+		if err := k.cdc.UnpackAny(proposal.Content, &proposalContent); err == nil {
+			if _, ok := proposalContent.(*types.AddTldProposalContent); ok {
+				depositToHandle = params.AddTldProposalCost
+				isAddTld = true
+			}
+		} else {
+			logger.Error("Failed to unpack proposal content for deposit handling in EndBlocker", "proposalID", proposal.Id, "error", err)
 		}
 
 		if passed {
 			proposal.Status = types.ProposalStatus_PROPOSAL_STATUS_PASSED
 			logger.Info("Proposal passed", "proposalID", proposal.Id)
 
-			err = k.executeProposal(sdkCtx, proposal)
-			if err != nil {
-				logger.Error("Failed to execute proposal", "proposalID", proposal.Id, "error", err)
+			execErr := k.executeProposal(sdkCtx, proposal)
+			if execErr != nil {
+				logger.Error("Failed to execute proposal", "proposalID", proposal.Id, "error", execErr)
 				proposal.Status = types.ProposalStatus_PROPOSAL_STATUS_FAILED
+				// Si la ejecución falla, el depósito específico de TLD se quema
+				if isAddTld && !depositToHandle.IsZero() {
+					proposerAddr, _ := k.addressCodec.StringToBytes(proposal.Proposer) // Ya parseado antes, pero por seguridad
+					if errBurn := k.bankKeeper.BurnCoins(sdkCtx, types.ModuleName, depositToHandle); errBurn != nil {
+						logger.Error("Failed to burn AddTldProposalCost after execution failure", "proposalID", proposal.Id, "proposer", proposerAddr, "deposit", depositToHandle.String(), "error", errBurn)
+					} else {
+						logger.Info("AddTldProposalCost burned after execution failure", "proposalID", proposal.Id, "amount", depositToHandle.String())
+					}
+				}
 			} else {
 				proposal.Status = types.ProposalStatus_PROPOSAL_STATUS_EXECUTED
 				logger.Info("Proposal executed successfully", "proposalID", proposal.Id)
+				// Si la ejecución es exitosa, el depósito (general o TLD) se devuelve
+				if !depositToHandle.IsZero() {
+					proposerAddr, _ := k.addressCodec.StringToBytes(proposal.Proposer)
+					if errRefund := k.bankKeeper.SendCoinsFromModuleToAccount(sdkCtx, types.ModuleName, sdk.AccAddress(proposerAddr), depositToHandle); errRefund != nil {
+						logger.Error("Failed to refund deposit for executed proposal", "proposalID", proposal.Id, "proposer", proposal.Proposer, "deposit", depositToHandle.String(), "error", errRefund)
+					} else {
+						logger.Info("Deposit refunded for executed proposal", "proposalID", proposal.Id, "amount", depositToHandle.String())
+					}
+				}
 			}
 		} else {
-			// Si no pasó y no hubo errores de tally que ya la marcaron como FAILED
-			if proposal.Status == types.ProposalStatus_PROPOSAL_STATUS_VOTING_PERIOD { // Asegurarse de no sobrescribir un FAILED
+			if proposal.Status == types.ProposalStatus_PROPOSAL_STATUS_VOTING_PERIOD {
 				proposal.Status = types.ProposalStatus_PROPOSAL_STATUS_REJECTED
 			}
 			logger.Info("Proposal rejected or failed prior to tally result", "proposalID", proposal.Id, "status", proposal.Status.String())
+			// Quemar depósito si la propuesta es rechazada o falla (y no fue por error de ejecución donde ya se quemó)
+			if (proposal.Status == types.ProposalStatus_PROPOSAL_STATUS_REJECTED || proposal.Status == types.ProposalStatus_PROPOSAL_STATUS_FAILED) && !depositToHandle.IsZero() {
+				if errBurn := k.bankKeeper.BurnCoins(sdkCtx, types.ModuleName, depositToHandle); errBurn != nil {
+					logger.Error("Failed to burn deposit for rejected/failed proposal", "proposalID", proposal.Id, "deposit", depositToHandle.String(), "error", errBurn)
+				} else {
+					logger.Info("Deposit burned for rejected/failed proposal", "proposalID", proposal.Id, "amount", depositToHandle.String())
+				}
+			}
 		}
 
 		if err := k.SetProposal(sdkCtx, proposal); err != nil {
 			logger.Error("Failed to set proposal status after processing", "proposalID", proposal.Id, "error", err)
-			return errors.Wrapf(err, "failed to set proposal %d status", proposal.Id)
+			return errorsmod.Wrapf(err, "failed to set proposal %d status", proposal.Id)
 		}
 
 		sdkCtx.EventManager().EmitEvent(
@@ -162,11 +194,11 @@ func (k Keeper) EndBlocker(ctx context.Context) error {
 	return nil
 }
 
-// executeProposal maneja la lógica de ejecución para diferentes tipos de propuestas.
+// ... (resto de executeProposal, executeAddTldProposal, executeRequestTokensProposal sin cambios) ...
 func (k Keeper) executeProposal(ctx sdk.Context, proposal types.Proposal) error {
 	var content types.ProposalContent
 	if err := k.cdc.UnpackAny(proposal.Content, &content); err != nil {
-		return errors.Wrapf(types.ErrInvalidProposalContent, "failed to unpack proposal content for execution: %v", err)
+		return errorsmod.Wrapf(types.ErrInvalidProposalContent, "failed to unpack proposal content for execution: %v", err)
 	}
 
 	switch c := content.(type) {
@@ -175,7 +207,7 @@ func (k Keeper) executeProposal(ctx sdk.Context, proposal types.Proposal) error 
 	case *types.RequestTokensProposalContent:
 		return k.executeRequestTokensProposal(ctx, c, proposal.Proposer) // Pasar proposer para el depósito si es necesario
 	default:
-		return errors.Wrapf(types.ErrInvalidProposalContent, "unknown proposal content type: %T", c)
+		return errorsmod.Wrapf(types.ErrInvalidProposalContent, "unknown proposal content type: %T", c)
 	}
 }
 
@@ -189,12 +221,12 @@ func (k Keeper) executeRequestTokensProposal(ctx sdk.Context, content *types.Req
 
 	recipient, err := k.addressCodec.StringToBytes(content.RecipientAddress)
 	if err != nil {
-		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid recipient address in proposal: %s", err)
+		return errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "invalid recipient address in proposal: %s", err)
 	}
 
 	err = k.bankKeeper.MintCoins(ctx, types.ModuleName, content.AmountRequested)
 	if err != nil {
-		return errors.Wrapf(err, "failed to mint coins for proposal execution")
+		return errorsmod.Wrapf(err, "failed to mint coins for proposal execution")
 	}
 
 	err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, sdk.AccAddress(recipient), content.AmountRequested)
@@ -203,7 +235,7 @@ func (k Keeper) executeRequestTokensProposal(ctx sdk.Context, content *types.Req
 		if burnErr != nil {
 			k.Logger(ctx).Error("CRITICAL: failed to burn coins after failed send in proposal execution", "burn_error", burnErr, "original_send_error", err)
 		}
-		return errors.Wrapf(err, "failed to send coins to recipient for proposal execution")
+		return errorsmod.Wrapf(err, "failed to send coins to recipient for proposal execution")
 	}
 	return nil
 }

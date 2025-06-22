@@ -62,16 +62,42 @@ func (k *msgServer) SubmitProposal(goCtx context.Context, msg *types.MsgSubmitPr
 		logger.Error("Failed to get dao params", "error", err)
 		return nil, errorsmod.Wrap(err, "failed to get dao params")
 	}
-	logger.Info("DAO Params fetched", "deposit", params.ProposalSubmissionDeposit.String(), "voting_period", params.VotingPeriodBlocks)
+	logger.Info("DAO Params fetched", "general_deposit", params.ProposalSubmissionDeposit.String(), "add_tld_cost", params.AddTldProposalCost.String(), "voting_period", params.VotingPeriodBlocks)
 
-	if !params.ProposalSubmissionDeposit.IsZero() {
-		logger.Info("Attempting to send deposit", "from", proposer.String(), "amount", params.ProposalSubmissionDeposit.String())
-		err = k.Keeper.bankKeeper.SendCoinsFromAccountToModule(ctx, proposer, types.ModuleName, params.ProposalSubmissionDeposit)
-		if err != nil {
-			logger.Error("Failed to send deposit", "error", err)
-			return nil, errorsmod.Wrap(err, "failed to send deposit")
+	// Cobrar depósito/costo
+	var depositToPay sdk.Coins
+	isAddTldProposal := false
+
+	if addTldContent, ok := content.(*types.AddTldProposalContent); ok {
+		isAddTldProposal = true
+		isPermitted, errPermitted := k.dnsblockchainKeeper.IsTLDPermitted(ctx, addTldContent.Tld)
+		if errPermitted != nil {
+			logger.Error("Failed to check if TLD is already permitted", "tld", addTldContent.Tld, "error", errPermitted)
+			return nil, errorsmod.Wrap(errPermitted, "failed to check TLD permission status")
 		}
-		logger.Info("Deposit sent successfully")
+		if isPermitted {
+			logger.Warn("Attempt to submit proposal for an already permitted TLD", "tld", addTldContent.Tld)
+			return nil, errorsmod.Wrapf(types.ErrInvalidProposalContent, "TLD '%s' is already permitted or registered", addTldContent.Tld)
+		}
+		depositToPay = params.AddTldProposalCost
+		logger.Info("Proposal identified as AddTldProposal", "cost", depositToPay.String())
+	} else {
+		depositToPay = params.ProposalSubmissionDeposit
+		logger.Info("Proposal identified as general proposal", "deposit", depositToPay.String())
+	}
+
+	if !depositToPay.IsZero() {
+		if err := k.Keeper.bankKeeper.SendCoinsFromAccountToModule(ctx, proposer, types.ModuleName, depositToPay); err != nil {
+			logger.Error("Failed to send required deposit/cost from proposer to DAO module", "proposer", proposer.String(), "amount", depositToPay.String(), "error", err)
+			return nil, errorsmod.Wrap(err, "failed to send required deposit/cost")
+		}
+		logger.Info("Required deposit/cost sent successfully", "amount", depositToPay.String())
+	} else {
+		if !msg.InitialDeposit.IsZero() {
+			logger.Error("Parameter deposit/cost is zero, but non-zero initial_deposit provided in message", "initial_deposit_msg", msg.InitialDeposit.String())
+			return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "parameter deposit/cost is zero, initial_deposit in message must also be zero")
+		}
+		logger.Info("No deposit/cost required by params, and no deposit provided in message.")
 	}
 
 	proposalID, err := k.GetNextProposalID(ctx)
@@ -92,14 +118,14 @@ func (k *msgServer) SubmitProposal(goCtx context.Context, msg *types.MsgSubmitPr
 		Title:                      msg.Title,
 		Description:                msg.Description,
 		Content:                    msg.Content,
-		Status:                     types.ProposalStatus_PROPOSAL_STATUS_VOTING_PERIOD, // <--- ESTADO INICIAL
+		Status:                     types.ProposalStatus_PROPOSAL_STATUS_VOTING_PERIOD,
 		SubmitBlock:                submitBlock,
-		VotingStartBlock:           submitBlock, // La votación empieza inmediatamente
+		VotingStartBlock:           submitBlock,
 		VotingEndBlock:             votingEndBlock,
 		YesVotes:                   math.ZeroInt(),
 		NoVotes:                    math.ZeroInt(),
 		AbstainVotes:               math.ZeroInt(),
-		TotalVotingPowerAtSnapshot: math.ZeroInt(), // TODO: Set this correctly
+		TotalVotingPowerAtSnapshot: math.ZeroInt(),
 	}
 	logger.Info("Proposal object created", "proposalID", proposal.Id, "status", proposal.Status.String())
 
@@ -109,11 +135,16 @@ func (k *msgServer) SubmitProposal(goCtx context.Context, msg *types.MsgSubmitPr
 	}
 	logger.Info("Proposal set in store successfully", "proposalID", proposal.Id)
 
+	proposalType := content.ProposalType()
+	if isAddTldProposal {
+		proposalType = "AddTld"
+	}
+
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
 			types.EventTypeSubmitProposal,
 			sdk.NewAttribute(types.AttributeKeyProposalID, fmt.Sprintf("%d", proposalID)),
-			sdk.NewAttribute(govtypes.AttributeKeyProposalType, content.ProposalType()), // Asegúrate que content.ProposalType() está definido
+			sdk.NewAttribute(govtypes.AttributeKeyProposalType, proposalType),
 			sdk.NewAttribute(types.AttributeKeyProposer, msg.Proposer),
 		),
 	})
@@ -132,7 +163,7 @@ func (k *msgServer) Vote(goCtx context.Context, msg *types.MsgVote) (*types.MsgV
 		return nil, errorsmod.Wrap(sdkerrors.ErrInvalidAddress, "invalid voter address")
 	}
 	voter := sdk.AccAddress(voterAddrBytes)
-	_ = voter // Para evitar error de no usado si no se usa más adelante explícitamente
+	_ = voter
 
 	proposal, err := k.GetProposal(ctx, msg.ProposalId)
 	if err != nil {
@@ -156,28 +187,19 @@ func (k *msgServer) Vote(goCtx context.Context, msg *types.MsgVote) (*types.MsgV
 		return nil, errorsmod.Wrapf(types.ErrVotingPeriodEnded, "proposalID %d: voting period has ended", msg.ProposalId)
 	}
 
-	// Lógica para comprobar si ya votó (corregida)
 	existingVote, err := k.GetVote(ctx, msg.ProposalId, voter)
-	if err == nil && existingVote.Voter != "" { // Si no hay error Y el voto recuperado tiene un votante (es decir, existe y no es un voto vacío por defecto)
+	if err == nil && existingVote.Voter != "" {
 		logger.Warn("Voter already voted", "proposalID", msg.ProposalId, "voter", msg.Voter)
 		return nil, errorsmod.Wrapf(types.ErrAlreadyVoted, "voter %s already voted on proposal %d", msg.Voter, msg.ProposalId)
-	} else if err != nil && !errors.Is(err, collections.ErrNotFound) { // Si hay un error Y NO ES ErrNotFound, es un problema
+	} else if err != nil && !errors.Is(err, collections.ErrNotFound) {
 		logger.Error("Failed to check for existing vote", "proposalID", msg.ProposalId, "voter", msg.Voter, "error", err)
 		return nil, errorsmod.Wrap(err, "failed to check existing vote")
 	}
-	// Si err es collections.ErrNotFound, o si err es nil pero existingVote.Voter es "", entonces el votante no ha votado todavía, lo cual es bueno.
-
-	// TODO: Implementar GetVotingPower(ctx, voter)
-	// votingPower := k.GetVotingPower(ctx, voter)
-	// if votingPower.IsZero() {
-	// 	return nil, errorsmod.Wrapf(types.ErrNoVotingPower, "voter %s has no voting power", msg.Voter)
-	// }
 
 	vote := types.Vote{
 		ProposalId: msg.ProposalId,
 		Voter:      msg.Voter,
 		Option:     msg.Option,
-		// VotingPowerUsed: votingPower, // Placeholder
 	}
 
 	if err := k.SetVote(ctx, vote); err != nil {
@@ -185,9 +207,6 @@ func (k *msgServer) Vote(goCtx context.Context, msg *types.MsgVote) (*types.MsgV
 		return nil, errorsmod.Wrap(err, "failed to set vote")
 	}
 	logger.Info("Vote set in store successfully", "proposalID", msg.ProposalId, "voter", msg.Voter, "option", msg.Option.String())
-
-	// TODO: Actualizar el tally de la propuesta aquí o en el EndBlocker.
-	// Por ahora, el tally se hará en el EndBlocker.
 
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(

@@ -1,13 +1,15 @@
 syntax = "proto3";
-package dnsblockchain.dnsblockchain.v1;
+package dnsblockchain.dnsblockchain.v1; // Paquete correcto para este módulo
 
 import "amino/amino.proto";
 import "gogoproto/gogo.proto";
 
 option go_package = "dnsblockchain/x/dnsblockchain/types";
 
-// Params defines the parameters for the module.
+// Params defines the parameters for the dnsblockchain module.
 message Params {
-  option (amino.name) = "dnsblockchain/x/dnsblockchain/Params";
+  option (amino.name) = "dnsblockchain/x/dnsblockchain/Params"; // Nombre correcto para amino
   option (gogoproto.equal) = true;
+  // Actualmente no tiene campos, pero la estructura debe existir.
+  // Si en el futuro necesitas parámetros para este módulo, los añadirías aquí.
 }

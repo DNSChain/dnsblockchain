@@ -21,6 +21,7 @@ const (
 var ParamsKey = collections.NewPrefix("p_dnsblockchain")
 
 var (
-	DomainKey      = collections.NewPrefix("domain/value/")
-	DomainCountKey = collections.NewPrefix("domain/count/")
+	DomainKey        = collections.NewPrefix("domain/value/")
+	DomainCountKey   = collections.NewPrefix("domain/count/")
+	PermittedTLDsKey = collections.NewPrefix("permitted_tlds/") // <-- NUEVA CLAVE
 )

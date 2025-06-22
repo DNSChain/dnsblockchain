@@ -1,16 +1,11 @@
 {
   "content": {
     "@type": "/dnsblockchain.dao.v1.AddTldProposalContent",
-    "tld": "fastvote", 
-    "description": "Propuesta para añadir el TLD .fastvote"
+    "tld": "web3",
+    "description": "Propuesta para añadir el TLD .blockchain"
   },
-  "title": "Añadir TLD .fastvote",
-  "description": "Esta propuesta busca añadir el dominio de nivel superior .fastvote.",
-  "proposer": "cosmos1fr7mkjyd8vh3e8he27s92cy5dcxdu5mzh58syt",
-  "initial_deposit": [
-    {
-      "denom": "stake",
-      "amount": "10000000"
-    }
-  ]
+  "title": "Añadir TLD .blockchain",
+  "description": "Propuesta con costo específico para TLD .blockchain.",
+  "proposer": "cosmos1mzp8hnyw20ye7fzp4cj7rncs0pm5ll3t08t0dl", 
+  "initial_deposit": []
 }

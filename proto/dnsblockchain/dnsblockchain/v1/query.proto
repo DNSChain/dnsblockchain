@@ -27,6 +27,11 @@ service Query {
   rpc ListDomain(QueryAllDomainRequest) returns (QueryAllDomainResponse) {
     option (google.api.http).get = "/dnsblockchain/dnsblockchain/v1/domain";
   }
+
+  // ListPermittedTLDs queries all permitted TLDs.
+  rpc ListPermittedTLDs(QueryListPermittedTLDsRequest) returns (QueryListPermittedTLDsResponse) { // <-- NUEVO RPC
+    option (google.api.http).get = "/dnsblockchain/dnsblockchain/v1/permitted_tlds";
+  }
 }
 
 // QueryParamsRequest is request type for the Query/Params RPC method.
@@ -60,4 +65,12 @@ message QueryAllDomainRequest {
 message QueryAllDomainResponse {
   repeated Domain domain = 1 [(gogoproto.nullable) = false];
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+// QueryListPermittedTLDsRequest is request type for the Query/ListPermittedTLDs RPC method.
+message QueryListPermittedTLDsRequest {} // <-- NUEVO MENSAJE
+
+// QueryListPermittedTLDsResponse is response type for the Query/ListPermittedTLDs RPC method.
+message QueryListPermittedTLDsResponse { // <-- NUEVO MENSAJE
+  repeated string tlds = 1;
 }

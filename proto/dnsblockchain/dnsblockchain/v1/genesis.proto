@@ -18,4 +18,5 @@ message GenesisState {
   ];
   repeated Domain domain_list = 2 [(gogoproto.nullable) = false];
   uint64 domain_count = 3;
+  repeated string permitted_tlds = 4; // <-- ESTE CAMPO ES CRUCIAL
 }

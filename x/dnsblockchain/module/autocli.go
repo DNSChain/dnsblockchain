@@ -29,6 +29,11 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					Alias:          []string{"show-domain"},
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{{ProtoField: "id"}},
 				},
+				{ // <-- NUEVA ENTRADA
+					RpcMethod: "ListPermittedTLDs",
+					Use:       "list-permitted-tlds",
+					Short:     "List all permitted TLDs",
+				},
 				// this line is used by ignite scaffolding # autocli/query
 			},
 		},

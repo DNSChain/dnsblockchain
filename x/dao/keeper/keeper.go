@@ -27,7 +27,7 @@ type Keeper struct {
 	authority sdk.AccAddress
 
 	Schema              collections.Schema
-	Params              collections.Item[types.Params]
+	Params              collections.Item[types.DaoParams]
 	ProposalSeq         collections.Sequence // Esta es la secuencia que usaremos para los IDs de propuesta
 	Proposals           collections.Map[uint64, types.Proposal]
 	Votes               collections.Map[collections.Pair[uint64, sdk.AccAddress], types.Vote]
@@ -56,7 +56,7 @@ func NewKeeper(
 		accountKeeper:       ak,
 		bankKeeper:          bk,
 		dnsblockchainKeeper: dk,
-		Params:              collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
+		Params:              collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.DaoParams](cdc)),
 		ProposalSeq:         collections.NewSequence(sb, types.ProposalSeqKey, "proposal_sequence"), // Usamos esta
 		Proposals:           collections.NewMap(sb, types.ProposalsKeyPrefix, "proposals", collections.Uint64Key, codec.CollValue[types.Proposal](cdc)),
 		Votes: collections.NewMap(sb, types.VotesKeyPrefix, "votes",

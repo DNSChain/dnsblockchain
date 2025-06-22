@@ -9,66 +9,47 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-// DefaultGenesis returns the default dao genesis state
-// func DefaultGenesis() *GenesisState {
-// 	return &GenesisState{
-// 		Params: DefaultParams(),
-// 	}
-// }
-
 // NewParams creates a new Params instance
 func NewParams(
 	votingPeriodBlocks uint64,
 	proposalSubmissionDeposit sdk.Coins,
 	minYesThresholdPercent math.LegacyDec,
-	votingTokenDenom string, // Este es el que cambiaremos
+	votingTokenDenom string,
 	votingPowerDecayDurationBlocks uint64,
-	validatorRewardVotingTokensAmount sdk.Coin, // Y este
-) Params {
-	return Params{
+	validatorRewardVotingTokensAmount sdk.Coin,
+	addTldProposalCost sdk.Coins, // <-- NUEVO PARÁMETRO
+) DaoParams {
+	return DaoParams{
 		VotingPeriodBlocks:                votingPeriodBlocks,
 		ProposalSubmissionDeposit:         proposalSubmissionDeposit,
 		MinYesThresholdPercent:            minYesThresholdPercent,
 		VotingTokenDenom:                  votingTokenDenom,
 		VotingPowerDecayDurationBlocks:    votingPowerDecayDurationBlocks,
 		ValidatorRewardVotingTokensAmount: validatorRewardVotingTokensAmount,
+		AddTldProposalCost:                addTldProposalCost, // <-- ASIGNAR
 	}
 }
 
 // DefaultParams returns a default set of parameters
-func DefaultParams() Params {
-	votingPeriod := uint64(500)
+func DefaultParams() DaoParams {
+	votingPeriod := uint64(500) // O el valor que prefieras para pruebas
 	decayDuration := uint64(2592000)
-
-	// Define tu nuevo denom. Es común usar un prefijo 'u' para la unidad base (micro).
-	// Por ejemplo, 'udnsc' para micro-dnsc, y luego 'dnsc' sería 1,000,000 udnsc.
-	// Por ahora, usaremos "dnsc" directamente, pero considera "udnsc".
-	// Si usas "udnsc", ajusta las cantidades en consecuencia.
-	// Para el ejemplo, usaré "dnsc" directamente y cantidades más pequeñas.
-	// Si quieres que "dnsc" sea la unidad principal con 6 decimales, entonces usa "udnsc"
-	// y multiplica las cantidades por 1,000,000.
-
-	// Opción 1: "dnsc" es la unidad base (sin decimales implícitos por el nombre)
-	// votingTokenDenom := "dnsc"
-	// validatorRewardAmount := sdk.NewInt64Coin(votingTokenDenom, 1) // 1 dnsc de recompensa
-
-	// Opción 2: "udnsc" es la unidad base (micro-dnsc, 6 decimales para "dnsc") - RECOMENDADO
-	votingTokenDenom := "udnsc" // micro-dnsc
-	// 1 dnsc = 1,000,000 udnsc. Recompensa de, por ejemplo, 1 dnsc por validador/bloque
+	votingTokenDenom := "udnsc"
 	validatorRewardAmount := sdk.NewInt64Coin(votingTokenDenom, 1000000)
 
 	return NewParams(
 		votingPeriod,
-		sdk.NewCoins(sdk.NewInt64Coin("stake", 10000000)), // Depósito de 10 stake (puedes cambiar 'stake' a tu BondDenom real si es diferente)
+		sdk.NewCoins(sdk.NewInt64Coin("stake", 10000000)), // Depósito general
 		math.LegacyMustNewDecFromStr("0.50"),
-		votingTokenDenom, // Usar la variable
+		votingTokenDenom,
 		decayDuration,
-		validatorRewardAmount, // Usar la variable
+		validatorRewardAmount,
+		sdk.NewCoins(sdk.NewInt64Coin("stake", 5000000)), // Costo de propuesta TLD: 5 stake
 	)
 }
 
 // Validate validates the set of params
-func (p Params) Validate() error {
+func (p DaoParams) Validate() error {
 	if p.VotingPeriodBlocks == 0 {
 		return fmt.Errorf("voting period blocks cannot be zero")
 	}
@@ -86,7 +67,7 @@ func (p Params) Validate() error {
 		return fmt.Errorf("min yes threshold percent cannot be greater than 1: %s", p.MinYesThresholdPercent)
 	}
 
-	if err := sdk.ValidateDenom(p.VotingTokenDenom); err != nil { // Validará "udnsc" o "dnsc"
+	if err := sdk.ValidateDenom(p.VotingTokenDenom); err != nil {
 		return errors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid voting token denom %s: %v", p.VotingTokenDenom, err)
 	}
 	if p.VotingPowerDecayDurationBlocks == 0 {
@@ -95,10 +76,16 @@ func (p Params) Validate() error {
 	if err := p.ValidatorRewardVotingTokensAmount.Validate(); err != nil {
 		return errors.Wrapf(sdkerrors.ErrInvalidCoins, "invalid validator reward voting tokens amount: %v", err)
 	}
-	// La validación del denom de la recompensa ahora usará la variable
 	if !p.ValidatorRewardVotingTokensAmount.IsZero() && p.ValidatorRewardVotingTokensAmount.Denom != p.VotingTokenDenom {
 		return fmt.Errorf("validator reward token denom (%s) must match voting token denom (%s) if amount is non-zero",
 			p.ValidatorRewardVotingTokensAmount.Denom, p.VotingTokenDenom)
 	}
+	if err := p.AddTldProposalCost.Validate(); err != nil { // <-- VALIDAR NUEVO PARÁMETRO
+		return errors.Wrapf(sdkerrors.ErrInvalidCoins, "invalid add TLD proposal cost: %v", err)
+	}
+	if !p.AddTldProposalCost.IsAllPositive() && !p.AddTldProposalCost.IsZero() { // Permitir cero, pero si no es cero, debe ser positivo
+		return errors.Wrap(sdkerrors.ErrInvalidCoins, "add TLD proposal cost must be positive if not zero")
+	}
+
 	return nil
 }
