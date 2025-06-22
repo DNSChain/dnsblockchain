@@ -17,6 +17,12 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					Use:       "params",
 					Short:     "Shows the parameters of the module",
 				},
+				{ // <-- NUEVA ENTRADA PARA QUERY PROPOSAL
+					RpcMethod:      "Proposal",
+					Use:            "proposal [proposal-id]",
+					Short:          "Query a proposal by ID",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{{ProtoField: "proposal_id"}},
+				},
 				// this line is used by ignite scaffolding # autocli/query
 			},
 		},
@@ -32,7 +38,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					RpcMethod: "Vote",
 					Use:       "vote [proposal-id] [option]",
 					Short:     "Vote on an active proposal",
-					Example:   `dnsblockchaind tx dao vote 1 VOTE_OPTION_YES --from <key_or_address>`,
+					Example:   `dnsblockchaind tx dao vote 1 VOTE_OPTION_YES --from <key_or_address>`, // Ejemplo podría necesitar minúsculas para option
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "proposal_id"},
 						{ProtoField: "option"},

@@ -37,7 +37,7 @@ func NewParams(
 
 // DefaultParams returns a default set of parameters
 func DefaultParams() Params {
-	votingPeriod := uint64(120960)
+	votingPeriod := uint64(500)
 	decayDuration := uint64(2592000)
 
 	// Define tu nuevo denom. Es común usar un prefijo 'u' para la unidad base (micro).

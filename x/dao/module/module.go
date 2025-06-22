@@ -1,6 +1,7 @@
 package dao // o el nombre de tu paquete de módulo
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
@@ -26,9 +27,8 @@ var (
 	_ module.HasGenesis     = (*AppModule)(nil)
 
 	_ appmodule.AppModule = (*AppModule)(nil) // AppModule de cosmossdk.io/core
-	// Si tu módulo DAO necesita BeginBlocker o EndBlocker, descomenta y implementa:
 	// _ appmodule.HasBeginBlocker = (*AppModule)(nil)
-	// _ appmodule.HasEndBlocker   = (*AppModule)(nil)
+	_ appmodule.HasEndBlocker = (*AppModule)(nil)
 )
 
 // AppModule implements the AppModule interface that defines the inter-dependent methods that modules need to implement
@@ -150,12 +150,11 @@ func (AppModule) ConsensusVersion() uint64 { return 1 } // Empieza en 1
 
 // EndBlock executes all ABCI EndBlock logic respective to the dao module. It
 // returns no validator updates.
-// func (am AppModule) EndBlock(ctx context.Context) error {
-// 	// sdkCtx := sdk.UnwrapSDKContext(ctx)
-// 	// Lógica de EndBlock para el módulo DAO (ej. procesar propuestas que finalizan su votación)
-//  // err := am.keeper.TallyAndProcessProposals(sdkCtx)
-//  // if err != nil {
-//  //  return err
-//  // }
-// 	return nil
-// }
+
+func (am AppModule) EndBlock(ctx context.Context) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	if err := am.keeper.EndBlocker(sdkCtx); err != nil { // Llamamos al EndBlocker del keeper
+		return err
+	}
+	return nil
+}

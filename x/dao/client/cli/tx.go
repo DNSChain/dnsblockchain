@@ -11,8 +11,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
 
-	// Usaremos esto para parsear la propuesta
-	// govtypes "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1" // O v1 si es necesario para el parsing
+	// "github.com/cosmos/cosmos-sdk/codec" // Ya no es necesario aquí
+	// codectypes "github.com/cosmos/cosmos-sdk/codec/types" // Ya no es necesario aquí
 
 	"dnsblockchain/x/dao/types"
 )
@@ -28,8 +28,6 @@ func GetTxCmd() *cobra.Command {
 	}
 
 	cmd.AddCommand(NewSubmitProposalCmd())
-	// cmd.AddCommand(NewVoteCmd()) // Podrías mover Vote aquí también si Autocli da problemas
-
 	return cmd
 }
 
@@ -66,10 +64,6 @@ A proposal JSON file example:
 			}
 
 			proposalFilePath := args[0]
-			// Parseamos el archivo JSON usando una función similar a la de x/gov
-			// o implementamos una nosotros mismos.
-			// Por simplicidad, vamos a intentar parsear directamente MsgSubmitProposal.
-			// Si esto falla por el campo Any, podríamos necesitar un struct intermedio.
 
 			contents, err := os.ReadFile(proposalFilePath)
 			if err != nil {
@@ -77,41 +71,24 @@ A proposal JSON file example:
 			}
 
 			var msg types.MsgSubmitProposal
-			// Necesitamos usar el codec de la interfaz para deserializar Any correctamente.
-			// clientCtx.InterfaceRegistry debería estar disponible.
-			// O usar ModuleCdc directamente si está configurado con la InterfaceRegistry.
-			if err := types.ModuleCdc.UnmarshalJSON(contents, &msg); err != nil {
-				// Intenta también con el codec del clientCtx si el ModuleCdc no funciona para Any
-				if err := clientCtx.Codec.UnmarshalJSON(contents, &msg); err != nil {
-					return fmt.Errorf("failed to unmarshal proposal: %w (ensure @type is correct for content)", err)
-				}
+			// Usar clientCtx.Codec directamente. Este debería ser el ProtoCodec de la aplicación.
+			if err := clientCtx.Codec.UnmarshalJSON(contents, &msg); err != nil {
+				return fmt.Errorf("failed to unmarshal proposal JSON: %w (ensure @type for content is correct and registered)", err)
 			}
 
-			// El campo 'proposer' en el JSON se puede usar para validación,
-			// pero el firmante real vendrá de --from.
-			// Para asegurar consistencia, podemos establecer el msg.Proposer al firmante.
-			// O validar que coincidan.
 			fromAddr := clientCtx.GetFromAddress()
 			if msg.Proposer != "" && msg.Proposer != fromAddr.String() {
 				return fmt.Errorf("proposer in JSON file (%s) does not match the --from address (%s)", msg.Proposer, fromAddr.String())
 			}
-			// Si el proposer no está en el JSON, lo asignamos desde el flag --from
 			if msg.Proposer == "" {
 				msg.Proposer = fromAddr.String()
 			}
-
-			// Validar el contenido del mensaje aquí si es necesario, aunque ValidateBasic se llamará después
-			// if err := msg.ValidateBasic(); err != nil {
-			// 	return err
-			// }
 
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
 		},
 	}
 
 	flags.AddTxFlagsToCmd(cmd)
-	// No necesitamos flags específicos para los campos de MsgSubmitProposal
-	// porque todos vienen del archivo JSON.
 
 	return cmd
 }
