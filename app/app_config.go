@@ -1,6 +1,8 @@
 package app
 
 import (
+	_ "dnsblockchain/x/dao/module"
+	daomoduletypes "dnsblockchain/x/dao/types"
 	_ "dnsblockchain/x/dnsblockchain/module"
 	dnsblockchainmoduletypes "dnsblockchain/x/dnsblockchain/types"
 	"time"
@@ -83,6 +85,7 @@ var (
 		{Account: nft.ModuleName},
 		{Account: ibctransfertypes.ModuleName, Permissions: []string{authtypes.Minter, authtypes.Burner}},
 		{Account: icatypes.ModuleName},
+		{Account: daomoduletypes.ModuleName, Permissions: []string{authtypes.Minter, authtypes.Burner, authtypes.Staking}},
 		// this line is used by starport scaffolding # stargate/app/maccPerms
 	}
 
@@ -127,6 +130,7 @@ var (
 						ibcexported.ModuleName,
 						// chain modules
 						dnsblockchainmoduletypes.ModuleName,
+						daomoduletypes.ModuleName,
 						// this line is used by starport scaffolding # stargate/app/beginBlockers
 					},
 					EndBlockers: []string{
@@ -136,6 +140,7 @@ var (
 						group.ModuleName,
 						// chain modules
 						dnsblockchainmoduletypes.ModuleName,
+						daomoduletypes.ModuleName,
 						// this line is used by starport scaffolding # stargate/app/endBlockers
 					},
 					// The following is mostly only needed when ModuleName != StoreKey name.
@@ -173,6 +178,7 @@ var (
 						icatypes.ModuleName,
 						// chain modules
 						dnsblockchainmoduletypes.ModuleName,
+						daomoduletypes.ModuleName,
 						// this line is used by starport scaffolding # stargate/app/initGenesis
 					},
 				}),
@@ -272,6 +278,10 @@ var (
 			{
 				Name:   dnsblockchainmoduletypes.ModuleName,
 				Config: appconfig.WrapAny(&dnsblockchainmoduletypes.Module{}),
+			},
+			{
+				Name:   daomoduletypes.ModuleName,
+				Config: appconfig.WrapAny(&daomoduletypes.Module{}),
 			},
 			// this line is used by starport scaffolding # stargate/app/moduleConfig
 		},

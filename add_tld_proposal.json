@@ -1,0 +1,16 @@
+{
+  "content": {
+    "@type": "/dnsblockchain.dao.v1.AddTldProposalContent",
+    "tld": "web3",
+    "description": "Propuesta para añadir el TLD .web3"
+  },
+  "title": "Añadir TLD .web3",
+  "description": "Esta propuesta busca añadir el dominio de nivel superior .web3 a la lista de TLDs permitidos en la plataforma.",
+  "proposer": "cosmos18q65mqwa9q5zcr9s0akks72rc6j43scv3c5w5y",
+  "initial_deposit": [
+    {
+      "denom": "stake",
+      "amount": "10000000"
+    }
+  ]
+}

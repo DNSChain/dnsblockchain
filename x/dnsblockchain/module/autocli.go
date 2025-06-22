@@ -41,10 +41,14 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					Skip:      true, // skipped because authority gated
 				},
 				{
-					RpcMethod:      "CreateDomain",
-					Use:            "create-domain [owner] [expiration] [ns]",
-					Short:          "Create domain",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{{ProtoField: "owner"}, {ProtoField: "expiration"}, {ProtoField: "ns"}},
+					RpcMethod: "CreateDomain",
+					Use:       "create-domain [name] [owner] [ns]", // name, owner, ns como posicionales
+					Short:     "Create domain",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{ // Expiration es manejado por el keeper
+						{ProtoField: "name"},
+						{ProtoField: "owner"},
+						{ProtoField: "ns"},
+					},
 				},
 				{
 					RpcMethod: "UpdateDomain",

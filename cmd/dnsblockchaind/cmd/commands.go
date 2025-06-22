@@ -25,6 +25,7 @@ import (
 	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
 
 	"dnsblockchain/app"
+	daocli "dnsblockchain/x/dao/client/cli" // Asegúrate que esta ruta es correcta y existe el paquete
 )
 
 func initRootCmd(
@@ -49,9 +50,9 @@ func initRootCmd(
 	// add keybase, auxiliary RPC, query, genesis, and tx child commands
 	rootCmd.AddCommand(
 		server.StatusCommand(),
-		genutilcli.Commands(txConfig, basicManager, app.DefaultNodeHome),
+		genutilcli.Commands(txConfig, basicManager, app.DefaultNodeHome), // Esto añade comandos de tx de módulos basados en AppModuleBasic
 		queryCommand(),
-		txCommand(),
+		txCommand(), // Llama a la función txCommand() que definimos abajo
 		keys.Commands(),
 	)
 }
@@ -80,6 +81,11 @@ func queryCommand() *cobra.Command {
 		server.QueryBlockResultsCmd(),
 	)
 
+	// Aquí es donde los módulos típicamente añaden sus comandos de query,
+	// pero Autocli debería manejar esto a través de EnhanceRootCommand.
+	// Si tienes comandos de query personalizados para dao, se añadirían aquí.
+	// cmd.AddCommand(daocli.GetQueryCmd()) // Ejemplo
+
 	return cmd
 }
 
@@ -104,6 +110,10 @@ func txCommand() *cobra.Command {
 		authcmd.GetDecodeCommand(),
 		authcmd.GetSimulateCmd(),
 	)
+
+	// Aquí añadimos explícitamente los comandos de transacción para el módulo DAO
+	// ya que estamos usando un constructor personalizado.
+	cmd.AddCommand(daocli.GetTxCmd()) // Esto llama a la función GetTxCmd del paquete daocli
 
 	return cmd
 }

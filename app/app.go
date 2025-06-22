@@ -46,6 +46,7 @@ import (
 	ibckeeper "github.com/cosmos/ibc-go/v10/modules/core/keeper"
 
 	"dnsblockchain/docs"
+	daomodulekeeper "dnsblockchain/x/dao/keeper"
 	dnsblockchainmodulekeeper "dnsblockchain/x/dnsblockchain/keeper"
 )
 
@@ -99,6 +100,7 @@ type App struct {
 	TransferKeeper      ibctransferkeeper.Keeper
 
 	DnsblockchainKeeper dnsblockchainmodulekeeper.Keeper
+	DaoKeeper           daomodulekeeper.Keeper
 	// this line is used by starport scaffolding # stargate/app/keeperDeclaration
 
 	// simulation manager
@@ -179,6 +181,7 @@ func New(
 		&app.CircuitBreakerKeeper,
 		&app.ParamsKeeper,
 		&app.DnsblockchainKeeper,
+		&app.DaoKeeper,
 	); err != nil {
 		panic(err)
 	}
