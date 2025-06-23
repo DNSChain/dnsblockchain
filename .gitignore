@@ -1,6 +1,6 @@
 # Binaries
-dnsblockchaind
-dnsblockchain
+/dnsblockchaind
+/dnsblockchain
 
 # Build artifacts
 build/

@@ -1,0 +1,14 @@
+syntax = "proto3";
+package dnsblockchain.dnsblockchain.v1;
+
+option go_package = "dnsblockchain/x/dnsblockchain/types";
+
+// Domain defines the Domain message.
+message Domain {
+  uint64 id = 1;
+  string name = 2;
+  string owner = 3;
+  string ns = 4;
+  string creator = 5;
+  uint64 expiration = 6;
+}

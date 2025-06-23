@@ -1,0 +1,61 @@
+syntax = "proto3";
+package dnsblockchain.dao.v1;
+
+import "amino/amino.proto";
+import "cosmos/base/query/v1beta1/pagination.proto";
+import "dnsblockchain/dao/v1/params.proto";
+import "dnsblockchain/dao/v1/dao.proto"; // <-- IMPORTANTE: para el tipo Proposal
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+
+option go_package = "dnsblockchain/x/dao/types";
+
+// Query defines the gRPC querier service.
+service Query {
+  // Parameters queries the parameters of the module.
+  rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
+    option (google.api.http).get = "/dnsblockchain/dao/v1/params";
+  }
+
+  // Proposal queries a proposal by ID.
+  rpc Proposal(QueryProposalRequest) returns (QueryProposalResponse) { // <-- NUEVO RPC
+    option (google.api.http).get = "/dnsblockchain/dao/v1/proposals/{proposal_id}";
+  }
+
+  // Proposals queries all proposals based on given status.
+  // rpc Proposals(QueryProposalsRequest) returns (QueryProposalsResponse) {
+  //   option (google.api.http).get = "/dnsblockchain/dao/v1/proposals";
+  // }
+
+  // Vote queries a vote by proposal ID and voter address.
+  // rpc Vote(QueryVoteRequest) returns (QueryVoteResponse) {
+  //   option (google.api.http).get = "/dnsblockchain/dao/v1/proposals/{proposal_id}/votes/{voter}";
+  // }
+
+  // Votes queries all votes by proposal ID.
+  // rpc Votes(QueryVotesRequest) returns (QueryVotesResponse) {
+  //   option (google.api.http).get = "/dnsblockchain/dao/v1/proposals/{proposal_id}/votes";
+  // }
+}
+
+// QueryParamsRequest is request type for the Query/Params RPC method.
+message QueryParamsRequest {}
+
+// QueryParamsResponse is response type for the Query/Params RPC method.
+message QueryParamsResponse {
+  // params holds all the parameters of this module.
+  DaoParams params = 1 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+// QueryProposalRequest is request type for the Query/Proposal RPC method.
+message QueryProposalRequest { // <-- NUEVO MENSAJE
+  uint64 proposal_id = 1;
+}
+
+// QueryProposalResponse is response type for the Query/Proposal RPC method.
+message QueryProposalResponse { // <-- NUEVO MENSAJE
+  Proposal proposal = 1 [(gogoproto.nullable) = false];
+}

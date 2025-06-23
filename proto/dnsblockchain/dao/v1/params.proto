@@ -1,0 +1,43 @@
+syntax = "proto3";
+package dnsblockchain.dao.v1; // Paquete correcto para este módulo
+
+import "gogoproto/gogo.proto";
+import "amino/amino.proto";
+import "cosmos/base/v1beta1/coin.proto";
+
+option go_package = "dnsblockchain/x/dao/types";
+
+// DaoParams defines the parameters for the dao module.
+message DaoParams { // Nombre del mensaje: DaoParams
+  option (amino.name) = "dnsblockchain/x/dao/DaoParams"; // Nombre correcto para amino
+  option (gogoproto.equal) = true;
+
+  // Duration of the voting period in number of blocks.
+  uint64 voting_period_blocks = 1;
+
+  // Minimum deposit required to submit a proposal for general types.
+  repeated cosmos.base.v1beta1.Coin proposal_submission_deposit = 2 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
+  
+  // Minimum percentage of YES votes (of the total voting power that voted, or total at snapshot)
+  // for a proposal to pass. (e.g., "0.50" for 50%). Stored as string, validated as Dec in Go.
+  string min_yes_threshold_percent = 3 [(gogoproto.customtype) = "cosmossdk.io/math.LegacyDec", (gogoproto.nullable) = false];
+
+  // Denomination of the token used for voting power.
+  string voting_token_denom = 4;
+
+  // Duration in blocks for which voting power decays from full to zero.
+  uint64 voting_power_decay_duration_blocks = 5;
+  
+  // Amount of voting tokens distributed as reward per block to (e.g., active validators).
+  // If zero, this mechanism is disabled.
+  cosmos.base.v1beta1.Coin validator_reward_voting_tokens_amount = 6 [(gogoproto.nullable) = false];
+
+  // Cost to submit a new TLD proposal.
+  repeated cosmos.base.v1beta1.Coin add_tld_proposal_cost = 7 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
+}
