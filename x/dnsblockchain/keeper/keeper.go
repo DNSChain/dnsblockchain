@@ -75,6 +75,13 @@ func (k Keeper) AddPermittedTLD(ctx context.Context, tld string) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	normalizedTLD := strings.ToLower(strings.TrimSpace(tld)) // Normalizar
 
+	// Check against hardcoded ICANN reserved list first
+	isGloballyReserved, _ := k.IsTLDGloballyReserved(sdkCtx, normalizedTLD) // Error from IsTLDGloballyReserved can be ignored as types.IsReservedTLD currently doesn't return one.
+	if isGloballyReserved {
+		k.Logger(sdkCtx).Error("Attempt to add globally reserved TLD directly to permitted list", "tld", normalizedTLD)
+		return errorsmod.Wrapf(types.ErrTLDReservedByICANN, "TLD '%s' is globally reserved and cannot be added to permitted TLDs", normalizedTLD)
+	}
+
 	if normalizedTLD == "" {
 		return errorsmod.Wrap(types.ErrInvalidTLD, "TLD cannot be empty")
 	}
@@ -97,6 +104,12 @@ func (k Keeper) AddPermittedTLD(ctx context.Context, tld string) error {
 
 	k.Logger(sdkCtx).Info("Adding permitted TLD to store", "tld", normalizedTLD)
 	return k.PermittedTLDs.Set(sdkCtx, normalizedTLD)
+}
+
+// IsTLDGloballyReserved checks if a TLD is in the hardcoded ICANN deny list.
+func (k Keeper) IsTLDGloballyReserved(ctx context.Context, tld string) (bool, error) {
+	// The list is in types, so the keeper calls the types package function.
+	return types.IsReservedTLD(tld), nil
 }
 
 // IsTLDPermitted verifica si un TLD está en la lista de permitidos.

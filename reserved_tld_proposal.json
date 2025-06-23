@@ -1,0 +1,11 @@
+{
+  "content": {
+    "@type": "/dnsblockchain.dao.v1.AddTldProposalContent",
+    "tld": "com",
+    "description": "Propuesta para añadir el TLD .com (debería fallar)"
+  },
+  "title": "Añadir TLD .com",
+  "description": "Esta propuesta intenta añadir un TLD reservado por ICANN.",
+  "proposer": "cosmos1mzp8hnyw20ye7fzp4cj7rncs0pm5ll3t08t0dl",
+  "initial_deposit": []
+}

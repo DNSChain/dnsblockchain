@@ -1,0 +1,11 @@
+{
+  "content": {
+    "@type": "/dnsblockchain.dao.v1.AddTldProposalContent",
+    "tld": "my social web",
+    "description": "Propuesta para añadir el TLD .myweb"
+  },
+  "title": "Añadir TLD .myweb",
+  "description": "Esta propuesta busca añadir el dominio de nivel superior .myweb.",
+  "proposer": "cosmos1mzp8hnyw20ye7fzp4cj7rncs0pm5ll3t08t0dl",
+  "initial_deposit": []
+}

@@ -4,8 +4,11 @@ import (
 	"context"
 	"errors" // Importar el paquete errors estándar de Go
 	"fmt"
+	"strings" // For TLD normalization
 
 	"dnsblockchain/x/dao/types"
+
+	dnstypes "dnsblockchain/x/dnsblockchain/types" // Import for dnsblockchain types
 
 	"cosmossdk.io/collections"
 	errorsmod "cosmossdk.io/errors" // Usar un alias para el de cosmossdk
@@ -57,6 +60,42 @@ func (k *msgServer) SubmitProposal(goCtx context.Context, msg *types.MsgSubmitPr
 		return nil, errorsmod.Wrap(err, "invalid proposal content")
 	}
 
+	// Check for duplicate active proposals with identical content
+	var activeProposalDuplicateFound bool
+	err = k.Proposals.Walk(ctx, nil, func(proposalID uint64, existingProposal types.Proposal) (stop bool, iterErr error) {
+		if existingProposal.Status == types.ProposalStatus_PROPOSAL_STATUS_VOTING_PERIOD {
+			var existingContent types.ProposalContent
+			if errUnpack := k.cdc.UnpackAny(existingProposal.Content, &existingContent); errUnpack != nil {
+				// Log this error but don't necessarily stop the whole submission
+				// unless it's critical to prevent submission if any active proposal content is corrupt.
+				logger.Error("Failed to unpack existing proposal content during duplicate check", "existingProposalID", existingProposal.Id, "error", errUnpack)
+				return false, nil // Continue checking other proposals
+			}
+
+			// Compare type URLs first
+			if msg.Content.TypeUrl == existingProposal.Content.TypeUrl {
+				// If type URLs match, compare the marshaled values of the unpacked content
+				// This ensures we are comparing the actual content, not just the Any wrapper.
+				newContentBytes, _ := k.cdc.MarshalInterface(content)
+				existingContentBytes, _ := k.cdc.MarshalInterface(existingContent)
+
+				if string(newContentBytes) == string(existingContentBytes) {
+					activeProposalDuplicateFound = true
+					return true, nil // Stop iteration, duplicate found
+				}
+			}
+		}
+		return false, nil
+	})
+	if err != nil { // This err is from the Walk function itself, not from the callback logic
+		logger.Error("Error walking proposals for duplicate check", "error", err)
+		return nil, errorsmod.Wrap(err, "failed to check for duplicate active proposals")
+	}
+	if activeProposalDuplicateFound {
+		logger.Warn("Attempt to submit a proposal with content identical to an active proposal")
+		return nil, types.ErrDuplicateActiveProposal
+	}
+
 	params, err := k.Params.Get(ctx)
 	if err != nil {
 		logger.Error("Failed to get dao params", "error", err)
@@ -69,8 +108,23 @@ func (k *msgServer) SubmitProposal(goCtx context.Context, msg *types.MsgSubmitPr
 	isAddTldProposal := false
 
 	if addTldContent, ok := content.(*types.AddTldProposalContent); ok {
+		normalizedProposedTLD := strings.ToLower(strings.Trim(addTldContent.Tld, "."))
+		// Update the content's TLD to the normalized version for consistency if needed,
+		// though AddPermittedTLD in dnsblockchain module also normalizes.
+		// For now, we'll use the normalized version for checks.
+
 		isAddTldProposal = true
-		isPermitted, errPermitted := k.dnsblockchainKeeper.IsTLDPermitted(ctx, addTldContent.Tld)
+		// Validate against ICANN reserved list
+		isGloballyReserved, errGloballyReserved := k.dnsblockchainKeeper.IsTLDGloballyReserved(ctx, normalizedProposedTLD)
+		if errGloballyReserved != nil { // Should not happen with current IsReservedTLD impl, but good practice
+			logger.Error("Failed to check if TLD is globally reserved", "tld", normalizedProposedTLD, "error", errGloballyReserved)
+			return nil, errorsmod.Wrap(errGloballyReserved, "failed to check TLD global reservation status")
+		}
+		if isGloballyReserved {
+			logger.Warn("Attempt to submit proposal for a globally reserved TLD", "tld", normalizedProposedTLD)
+			return nil, errorsmod.Wrapf(dnstypes.ErrTLDReservedByICANN, "TLD '%s' is reserved by ICANN and cannot be proposed", normalizedProposedTLD) // Use dnstypes for the error
+		}
+		isPermitted, errPermitted := k.dnsblockchainKeeper.IsTLDPermitted(ctx, normalizedProposedTLD)
 		if errPermitted != nil {
 			logger.Error("Failed to check if TLD is already permitted", "tld", addTldContent.Tld, "error", errPermitted)
 			return nil, errorsmod.Wrap(errPermitted, "failed to check TLD permission status")
@@ -78,7 +132,8 @@ func (k *msgServer) SubmitProposal(goCtx context.Context, msg *types.MsgSubmitPr
 		if isPermitted {
 			logger.Warn("Attempt to submit proposal for an already permitted TLD", "tld", addTldContent.Tld)
 			return nil, errorsmod.Wrapf(types.ErrInvalidProposalContent, "TLD '%s' is already permitted or registered", addTldContent.Tld)
-		}
+		} // The TLD in addTldContent sent to executeAddTldProposal will be the original one from the proposal.
+		// The dnsblockchainKeeper.AddPermittedTLD will normalize it again.
 		depositToPay = params.AddTldProposalCost
 		logger.Info("Proposal identified as AddTldProposal", "cost", depositToPay.String())
 	} else {

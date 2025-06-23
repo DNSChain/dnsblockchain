@@ -1,0 +1,1 @@
+dnsblockchaind start --log_level "info" go mod tidy

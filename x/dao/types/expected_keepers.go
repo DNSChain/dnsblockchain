@@ -23,5 +23,6 @@ type BankKeeper interface {
 // DnsblockchainKeeper defines the expected interface for your Dnsblockchain module.
 type DnsblockchainKeeper interface {
 	AddPermittedTLD(ctx context.Context, tld string) error
-	IsTLDPermitted(ctx context.Context, tld string) (bool, error) // <--- ASEGÚRATE QUE ESTA LÍNEA ESTÉ ASÍ
+	IsTLDPermitted(ctx context.Context, tld string) (bool, error)        // <--- ASEGÚRATE QUE ESTA LÍNEA ESTÉ ASÍ
+	IsTLDGloballyReserved(ctx context.Context, tld string) (bool, error) // New function to check against hardcoded ICANN list
 }
