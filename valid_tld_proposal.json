@@ -1,7 +1,7 @@
 {
   "content": {
     "@type": "/dnsblockchain.dao.v1.AddTldProposalContent",
-    "tld": "my social web",
+    "tld": "web3",
     "description": "Propuesta para añadir el TLD .myweb"
   },
   "title": "Añadir TLD .myweb",
