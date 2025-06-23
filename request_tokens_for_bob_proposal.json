@@ -1,0 +1,17 @@
+{
+  "content": {
+    "@type": "/dnsblockchain.dao.v1.RequestTokensProposalContent",
+    "recipient_address": "cosmos1wdagve24qnpqj005m07nxqrfqe7xquvymedgjg",
+    "amount_requested": [
+      {
+        "denom": "udns",
+        "amount": "1000000"
+      }
+    ],
+    "activity_description": "Otorgar tokens de poder de voto a Bob por su contribución."
+  },
+  "title": "Otorgar Poder de Voto a Bob (P1)",
+  "description": "Esta propuesta otorga 1000000 udns a Bob.",
+  "proposer": "cosmos1gjwq649yvf4qlauxhetu78eazkhq4l8nnwddc0",
+  "initial_deposit": []
+}

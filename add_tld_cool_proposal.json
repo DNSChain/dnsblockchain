@@ -1,0 +1,11 @@
+{
+  "content": {
+    "@type": "/dnsblockchain.dao.v1.AddTldProposalContent",
+    "tld": "free",
+    "description": "Propuesta para añadir el TLD .cool"
+  },
+  "title": "Añadir TLD .cool (P2)",
+  "description": "Propuesta para el TLD .cool.",
+  "proposer": "cosmos1gjwq649yvf4qlauxhetu78eazkhq4l8nnwddc0",
+  "initial_deposit": []
+}

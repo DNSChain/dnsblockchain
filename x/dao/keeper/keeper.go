@@ -1,14 +1,13 @@
-// x/dao/keeper/keeper.go
-
 package keeper
 
 import (
 	"fmt"
-
+	// Importar context para sdk.Context
 	"cosmossdk.io/collections"
 	"cosmossdk.io/core/address"
 	storetypes "cosmossdk.io/core/store"
 	"cosmossdk.io/log"
+	"cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -28,10 +27,11 @@ type Keeper struct {
 
 	Schema              collections.Schema
 	Params              collections.Item[types.DaoParams]
-	ProposalSeq         collections.Sequence // Esta es la secuencia que usaremos para los IDs de propuesta
+	ProposalSeq         collections.Sequence
 	Proposals           collections.Map[uint64, types.Proposal]
 	Votes               collections.Map[collections.Pair[uint64, sdk.AccAddress], types.Vote]
 	ActiveProposalQueue collections.KeySet[uint64]
+	VoterPowerLots      collections.Map[collections.Pair[sdk.AccAddress, uint64], types.VoterVotingPowerLot]
 }
 
 func NewKeeper(
@@ -57,13 +57,17 @@ func NewKeeper(
 		bankKeeper:          bk,
 		dnsblockchainKeeper: dk,
 		Params:              collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.DaoParams](cdc)),
-		ProposalSeq:         collections.NewSequence(sb, types.ProposalSeqKey, "proposal_sequence"), // Usamos esta
+		ProposalSeq:         collections.NewSequence(sb, types.ProposalSeqKey, "proposal_sequence"),
 		Proposals:           collections.NewMap(sb, types.ProposalsKeyPrefix, "proposals", collections.Uint64Key, codec.CollValue[types.Proposal](cdc)),
 		Votes: collections.NewMap(sb, types.VotesKeyPrefix, "votes",
 			collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey),
 			codec.CollValue[types.Vote](cdc),
 		),
 		ActiveProposalQueue: collections.NewKeySet(sb, types.ActiveProposalQueueKeyPrefix, "active_proposal_queue", collections.Uint64Key),
+		VoterPowerLots: collections.NewMap(sb, types.VoterPowerLotsKeyPrefix, "voter_power_lots",
+			collections.PairKeyCodec(sdk.AccAddressKey, collections.Uint64Key),
+			codec.CollValue[types.VoterVotingPowerLot](cdc),
+		),
 	}
 
 	schema, err := sb.Build()
@@ -85,91 +89,53 @@ func (k Keeper) GetAuthority() sdk.AccAddress {
 	return k.authority
 }
 
-// --- Proposal Helpers ---
-
-// GetNextProposalID retrieves the next proposal ID by calling Next on the ProposalSeq sequence.
 func (k Keeper) GetNextProposalID(ctx sdk.Context) (uint64, error) {
-	// El método Next() de collections.Sequence ya incrementa y devuelve el nuevo valor.
-	// Si quieres el valor actual y LUEGO incrementarlo, necesitarías Peek() y luego Set(),
-	// pero Next() es más atómico para este caso de uso.
-	// La primera vez que se llama a Next() en una secuencia vacía, devuelve 1 (si está inicializada a 0 o no existe).
-	// Si quieres que los IDs empiecen en 0, puedes hacer Peek y luego Set(id+1), devolviendo Peek.
-	// Pero empezar en 1 para los IDs suele ser más común.
 	return k.ProposalSeq.Next(ctx)
 }
 
-// SetProposal sets a proposal in the store.
 func (k Keeper) SetProposal(ctx sdk.Context, proposal types.Proposal) error {
 	return k.Proposals.Set(ctx, proposal.Id, proposal)
 }
 
-// GetProposal retrieves a proposal from the store by its ID.
 func (k Keeper) GetProposal(ctx sdk.Context, proposalID uint64) (types.Proposal, error) {
-	// El método Get de collections.Map devuelve el valor y un error.
-	// El error será collections.ErrNotFound si no se encuentra.
 	return k.Proposals.Get(ctx, proposalID)
 }
 
-// DeleteProposal removes a proposal from the store.
-// (Podrías necesitar esto más adelante, por ejemplo, para limpiar propuestas antiguas o fallidas)
-// func (k Keeper) DeleteProposal(ctx sdk.Context, proposalID uint64) error {
-// 	return k.Proposals.Remove(ctx, proposalID)
-// }
-
-// IterateProposals iterates over all proposals in the store and performs a callback function.
 func (k Keeper) IterateProposals(ctx sdk.Context, cb func(proposal types.Proposal) (stop bool)) error {
 	return k.Proposals.Walk(ctx, nil, func(key uint64, proposal types.Proposal) (bool, error) {
 		return cb(proposal), nil
 	})
 }
 
-// --- Vote Helpers ---
-
-// SetVote sets a vote in the store.
 func (k Keeper) SetVote(ctx sdk.Context, vote types.Vote) error {
 	voterAddr, err := k.addressCodec.StringToBytes(vote.Voter)
 	if err != nil {
-		return err // Debería haber sido validado antes, pero por seguridad
+		return err
 	}
-	// La clave para los votos es un par (ProposalID, VoterAddress)
 	key := collections.Join(vote.ProposalId, sdk.AccAddress(voterAddr))
 	return k.Votes.Set(ctx, key, vote)
 }
 
-// GetVote retrieves a vote from the store.
 func (k Keeper) GetVote(ctx sdk.Context, proposalID uint64, voter sdk.AccAddress) (types.Vote, error) {
 	key := collections.Join(proposalID, voter)
 	return k.Votes.Get(ctx, key)
 }
 
-// IterateVotesByProposal iterates over all votes for a specific proposal.
 func (k Keeper) IterateVotesByProposal(ctx sdk.Context, proposalID uint64, cb func(vote types.Vote) (stop bool)) error {
-	// Para iterar votos por ProposalID, necesitarías un índice secundario o un prefijo.
-	// El KeySet actual para Votes es (ProposalID, VoterAddress).
-	// Podrías usar un iterador con un prefijo si construyes la clave de prefijo correctamente.
-	// Ejemplo de iteración (puede necesitar ajuste para el PairKey):
 	prefixRange := collections.NewPrefixedPairRange[uint64, sdk.AccAddress](proposalID)
 	return k.Votes.Walk(ctx, prefixRange, func(key collections.Pair[uint64, sdk.AccAddress], vote types.Vote) (bool, error) {
 		return cb(vote), nil
 	})
 }
 
-// --- Active Proposal Queue Helpers ---
-// (Estos son placeholders y probablemente necesitarán una implementación más robusta
-//  usando el end_block para la ordenación y el procesamiento en EndBlocker)
-
-// AddToActiveProposalQueue adds a proposal ID to a simple set for active proposals.
 func (k Keeper) AddToActiveProposalQueue(ctx sdk.Context, proposalID uint64) error {
 	return k.ActiveProposalQueue.Set(ctx, proposalID)
 }
 
-// RemoveFromActiveProposalQueue removes a proposal ID from the active set.
 func (k Keeper) RemoveFromActiveProposalQueue(ctx sdk.Context, proposalID uint64) error {
 	return k.ActiveProposalQueue.Remove(ctx, proposalID)
 }
 
-// GetActiveProposals returns all proposal IDs currently in the active queue.
-// En una implementación real, esto iteraría sobre propuestas con estado VOTING_PERIOD.
 func (k Keeper) GetActiveProposals(ctx sdk.Context) ([]uint64, error) {
 	var proposalIDs []uint64
 	err := k.ActiveProposalQueue.Walk(ctx, nil, func(proposalID uint64) (bool, error) {
@@ -177,4 +143,103 @@ func (k Keeper) GetActiveProposals(ctx sdk.Context) ([]uint64, error) {
 		return false, nil
 	})
 	return proposalIDs, err
+}
+
+// IsLotBasedVotingActive verifica si ya existe al menos un lote de poder de voto en el sistema.
+func (k Keeper) IsLotBasedVotingActive(ctx sdk.Context) (bool, error) {
+	var foundOne bool
+	// Iteramos solo hasta encontrar el primero para eficiencia.
+	// Usamos un rango nil para iterar sobre todos los VoterPowerLots.
+	err := k.VoterPowerLots.Walk(ctx, nil, func(key collections.Pair[sdk.AccAddress, uint64], lot types.VoterVotingPowerLot) (stop bool, err error) {
+		foundOne = true
+		return true, nil // Detener la iteración
+	})
+	if err != nil {
+		// Este error sería un problema de store, no que no se encontró nada.
+		return false, fmt.Errorf("error checking for active power lots: %w", err)
+	}
+	return foundOne, nil
+}
+
+// CalculateVoterPower calcula el poder de voto actual de un votante considerando el decaimiento.
+func (k Keeper) CalculateVoterPower(ctx sdk.Context, voterAddr sdk.AccAddress, currentBlockHeight uint64) (math.Int, error) {
+	logger := k.Logger(ctx)
+	totalPower := math.ZeroInt()
+	params, err := k.Params.Get(ctx)
+
+	if err != nil {
+		return math.ZeroInt(), fmt.Errorf("failed to get dao params for power calculation: %w", err)
+	}
+
+	lotBasedVotingActive, err := k.IsLotBasedVotingActive(ctx)
+	if err != nil {
+		logger.Error("CalculateVoterPower: Error checking if lot-based voting is active", "error", err)
+		return math.ZeroInt(), err
+	}
+
+	if !lotBasedVotingActive {
+		logger.Info("CalculateVoterPower: Lot-based voting not active. Using general balance.", "voter", voterAddr.String())
+		basePowerCoin := k.bankKeeper.GetBalance(ctx, voterAddr, params.VotingTokenDenom)
+		return basePowerCoin.Amount, nil
+	}
+
+	// Si lotBasedVotingActive es true, procedemos con la lógica de lotes
+	decayDurationBlocks := params.VotingPowerDecayDurationBlocks
+	if decayDurationBlocks == 0 {
+		logger.Info("CalculateVoterPower: VotingPowerDecayDurationBlocks is zero, power from specific lots will not decay.")
+	}
+
+	prefixRange := collections.NewPrefixedPairRange[sdk.AccAddress, uint64](voterAddr)
+	foundLots := false
+	err = k.VoterPowerLots.Walk(ctx, prefixRange, func(key collections.Pair[sdk.AccAddress, uint64], lot types.VoterVotingPowerLot) (stop bool, err error) {
+		foundLots = true
+		logger.Debug("CalculateVoterPower: Processing lot", "voter", voterAddr.String(), "grantProposalID", lot.GrantedByProposalId, "initialAmount", lot.InitialAmount.String(), "grantBlock", lot.GrantBlockHeight)
+		if lot.InitialAmount.IsZero() {
+			return false, nil
+		}
+		if decayDurationBlocks == 0 {
+			totalPower = totalPower.Add(lot.InitialAmount)
+			logger.Debug("CalculateVoterPower: Lot power added (no decay)", "addedPower", lot.InitialAmount.String(), "newTotalPower", totalPower.String())
+			return false, nil
+		}
+
+		blocksPassed := currentBlockHeight - lot.GrantBlockHeight
+		if blocksPassed >= decayDurationBlocks {
+			return false, nil
+		}
+
+		remainingRatio := math.LegacyOneDec().Sub(math.LegacyNewDec(int64(blocksPassed)).QuoInt64(int64(decayDurationBlocks)))
+		decayedPower := math.LegacyNewDecFromInt(lot.InitialAmount).Mul(remainingRatio).TruncateInt()
+
+		logger.Debug("CalculateVoterPower: Lot decay calculation", "blocksPassed", blocksPassed, "remainingRatio", remainingRatio.String(), "decayedPower", decayedPower.String())
+
+		if decayedPower.IsPositive() {
+			totalPower = totalPower.Add(decayedPower)
+			logger.Debug("CalculateVoterPower: Lot power added (with decay)", "addedDecayedPower", decayedPower.String(), "newTotalPower", totalPower.String())
+		}
+		return false, nil
+	})
+
+	if err != nil {
+		logger.Error("CalculateVoterPower: Error iterating voter power lots", "voter", voterAddr.String(), "error", err)
+		return math.ZeroInt(), fmt.Errorf("failed to iterate voter power lots for %s: %w", voterAddr.String(), err)
+	}
+
+	// Si el sistema de lotes está activo (lotBasedVotingActive == true):
+	// - Si el votante tiene lotes, totalPower es la suma del poder decaído de esos lotes.
+	// - Si el votante NO tiene lotes (foundLots == false), totalPower seguirá siendo ZeroInt.
+	// - Si el votante tenía lotes pero todos decayeron, totalPower será ZeroInt.
+	// En ninguno de estos casos (cuando lotBasedVotingActive es true) recurrimos al balance general.
+	if lotBasedVotingActive {
+		if !foundLots {
+			logger.Info("CalculateVoterPower: Lot-based voting active. Voter has no lots.", "voter", voterAddr.String(), "finalPower", totalPower.String())
+		} else if totalPower.IsZero() { // Found lots, but they all decayed or were zero initially
+			logger.Info("CalculateVoterPower: Lot-based voting active. All lots for voter decayed or were zero.", "voter", voterAddr.String(), "finalPower", totalPower.String())
+		} else { // Found lots and they have some power
+			logger.Info("CalculateVoterPower: Using power from active/decaying lots", "voter", voterAddr.String(), "power_from_lots", totalPower.String())
+		}
+	}
+	// El caso de !lotBasedVotingActive ya se manejó al principio de la función.
+
+	return totalPower, nil
 }

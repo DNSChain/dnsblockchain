@@ -30,7 +30,7 @@ var _ types.MsgServer = (*msgServer)(nil)
 
 func (k *msgServer) SubmitProposal(goCtx context.Context, msg *types.MsgSubmitProposal) (*types.MsgSubmitProposalResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	logger := k.Logger(ctx) // Usar el logger del keeper
+	logger := k.Logger(ctx)
 	logger.Info("MsgSubmitProposal received", "proposer", msg.Proposer, "title", msg.Title)
 
 	proposerAddr, err := k.addressCodec.StringToBytes(msg.Proposer)
@@ -60,34 +60,28 @@ func (k *msgServer) SubmitProposal(goCtx context.Context, msg *types.MsgSubmitPr
 		return nil, errorsmod.Wrap(err, "invalid proposal content")
 	}
 
-	// Check for duplicate active proposals with identical content
 	var activeProposalDuplicateFound bool
 	err = k.Proposals.Walk(ctx, nil, func(proposalID uint64, existingProposal types.Proposal) (stop bool, iterErr error) {
 		if existingProposal.Status == types.ProposalStatus_PROPOSAL_STATUS_VOTING_PERIOD {
 			var existingContent types.ProposalContent
 			if errUnpack := k.cdc.UnpackAny(existingProposal.Content, &existingContent); errUnpack != nil {
-				// Log this error but don't necessarily stop the whole submission
-				// unless it's critical to prevent submission if any active proposal content is corrupt.
 				logger.Error("Failed to unpack existing proposal content during duplicate check", "existingProposalID", existingProposal.Id, "error", errUnpack)
-				return false, nil // Continue checking other proposals
+				return false, nil
 			}
 
-			// Compare type URLs first
 			if msg.Content.TypeUrl == existingProposal.Content.TypeUrl {
-				// If type URLs match, compare the marshaled values of the unpacked content
-				// This ensures we are comparing the actual content, not just the Any wrapper.
 				newContentBytes, _ := k.cdc.MarshalInterface(content)
 				existingContentBytes, _ := k.cdc.MarshalInterface(existingContent)
 
 				if string(newContentBytes) == string(existingContentBytes) {
 					activeProposalDuplicateFound = true
-					return true, nil // Stop iteration, duplicate found
+					return true, nil
 				}
 			}
 		}
 		return false, nil
 	})
-	if err != nil { // This err is from the Walk function itself, not from the callback logic
+	if err != nil {
 		logger.Error("Error walking proposals for duplicate check", "error", err)
 		return nil, errorsmod.Wrap(err, "failed to check for duplicate active proposals")
 	}
@@ -103,26 +97,20 @@ func (k *msgServer) SubmitProposal(goCtx context.Context, msg *types.MsgSubmitPr
 	}
 	logger.Info("DAO Params fetched", "general_deposit", params.ProposalSubmissionDeposit.String(), "add_tld_cost", params.AddTldProposalCost.String(), "voting_period", params.VotingPeriodBlocks)
 
-	// Cobrar depósito/costo
 	var depositToPay sdk.Coins
 	isAddTldProposal := false
 
 	if addTldContent, ok := content.(*types.AddTldProposalContent); ok {
 		normalizedProposedTLD := strings.ToLower(strings.Trim(addTldContent.Tld, "."))
-		// Update the content's TLD to the normalized version for consistency if needed,
-		// though AddPermittedTLD in dnsblockchain module also normalizes.
-		// For now, we'll use the normalized version for checks.
-
 		isAddTldProposal = true
-		// Validate against ICANN reserved list
 		isGloballyReserved, errGloballyReserved := k.dnsblockchainKeeper.IsTLDGloballyReserved(ctx, normalizedProposedTLD)
-		if errGloballyReserved != nil { // Should not happen with current IsReservedTLD impl, but good practice
+		if errGloballyReserved != nil {
 			logger.Error("Failed to check if TLD is globally reserved", "tld", normalizedProposedTLD, "error", errGloballyReserved)
 			return nil, errorsmod.Wrap(errGloballyReserved, "failed to check TLD global reservation status")
 		}
 		if isGloballyReserved {
 			logger.Warn("Attempt to submit proposal for a globally reserved TLD", "tld", normalizedProposedTLD)
-			return nil, errorsmod.Wrapf(dnstypes.ErrTLDReservedByICANN, "TLD '%s' is reserved by ICANN and cannot be proposed", normalizedProposedTLD) // Use dnstypes for the error
+			return nil, errorsmod.Wrapf(dnstypes.ErrTLDReservedByICANN, "TLD '%s' is reserved by ICANN and cannot be proposed", normalizedProposedTLD)
 		}
 		isPermitted, errPermitted := k.dnsblockchainKeeper.IsTLDPermitted(ctx, normalizedProposedTLD)
 		if errPermitted != nil {
@@ -132,8 +120,7 @@ func (k *msgServer) SubmitProposal(goCtx context.Context, msg *types.MsgSubmitPr
 		if isPermitted {
 			logger.Warn("Attempt to submit proposal for an already permitted TLD", "tld", addTldContent.Tld)
 			return nil, errorsmod.Wrapf(types.ErrInvalidProposalContent, "TLD '%s' is already permitted or registered", addTldContent.Tld)
-		} // The TLD in addTldContent sent to executeAddTldProposal will be the original one from the proposal.
-		// The dnsblockchainKeeper.AddPermittedTLD will normalize it again.
+		}
 		depositToPay = params.AddTldProposalCost
 		logger.Info("Proposal identified as AddTldProposal", "cost", depositToPay.String())
 	} else {
@@ -180,7 +167,7 @@ func (k *msgServer) SubmitProposal(goCtx context.Context, msg *types.MsgSubmitPr
 		YesVotes:                   math.ZeroInt(),
 		NoVotes:                    math.ZeroInt(),
 		AbstainVotes:               math.ZeroInt(),
-		TotalVotingPowerAtSnapshot: math.ZeroInt(),
+		TotalVotingPowerAtSnapshot: k.bankKeeper.GetSupply(ctx, params.VotingTokenDenom).Amount,
 	}
 	logger.Info("Proposal object created", "proposalID", proposal.Id, "status", proposal.Status.String())
 
@@ -222,7 +209,7 @@ func (k *msgServer) Vote(goCtx context.Context, msg *types.MsgVote) (*types.MsgV
 
 	proposal, err := k.GetProposal(ctx, msg.ProposalId)
 	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) { // Usar errors.Is del paquete estándar 'errors'
+		if errors.Is(err, collections.ErrNotFound) {
 			logger.Warn("Proposal not found for voting", "proposalID", msg.ProposalId)
 			return nil, errorsmod.Wrapf(types.ErrProposalNotFound, "proposalID %d not found", msg.ProposalId)
 		}
@@ -251,10 +238,23 @@ func (k *msgServer) Vote(goCtx context.Context, msg *types.MsgVote) (*types.MsgV
 		return nil, errorsmod.Wrap(err, "failed to check existing vote")
 	}
 
+	// CalculateVoterPower obtendrá los params internamente.
+	votingPower, err := k.CalculateVoterPower(ctx, voter, uint64(ctx.BlockHeight()))
+	if err != nil {
+		logger.Error("Failed to calculate voter power", "voter", msg.Voter, "error", err)
+		return nil, errorsmod.Wrap(err, "failed to calculate voter power")
+	}
+
+	if votingPower.IsZero() {
+		logger.Warn("Voter has no voting power for this proposal", "proposalID", msg.ProposalId, "voter", msg.Voter)
+		return nil, types.ErrNoVotingPower
+	}
+
 	vote := types.Vote{
-		ProposalId: msg.ProposalId,
-		Voter:      msg.Voter,
-		Option:     msg.Option,
+		ProposalId:  msg.ProposalId,
+		Voter:       msg.Voter,
+		Option:      msg.Option,
+		VotingPower: votingPower,
 	}
 
 	if err := k.SetVote(ctx, vote); err != nil {
@@ -269,6 +269,7 @@ func (k *msgServer) Vote(goCtx context.Context, msg *types.MsgVote) (*types.MsgV
 			sdk.NewAttribute(types.AttributeKeyProposalID, fmt.Sprintf("%d", msg.ProposalId)),
 			sdk.NewAttribute(types.AttributeKeyVoter, msg.Voter),
 			sdk.NewAttribute(types.AttributeKeyVoteOption, msg.Option.String()),
+			sdk.NewAttribute(types.AttributeKeyVotingPower, votingPower.String()),
 		),
 	})
 	logger.Info("Vote successful", "proposalID", msg.ProposalId, "voter", msg.Voter)

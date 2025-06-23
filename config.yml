@@ -1,27 +1,35 @@
 version: 1
-validation: sovereign
-default_denom: stake
-accounts: 
-- name: alice
-  coins:
-  - 20000token
-  - 200000000stake
-- name: bob
-  coins:
-  - 10000token
-  - 100000000stake
-client:
-  openapi:
-    path: docs/static/openapi.yml
-faucet:
-  name: bob
-  coins:
-  - 5token
-  - 100000stake
 validators:
 - name: alice
-  bonded: 100000000stake
-- name: validator1
-  bonded: 200000000stake
-- name: validator2
-  bonded: 100000000stake
+  bonded: 100000000udns
+- name: bob
+  bonded: 100000000udns
+accounts:
+- name: alice
+  coins:
+  - 200000000udns
+- name: bob # Bob también será el faucet
+  coins:
+  - 1100000000udns # 100M iniciales + 1000M para el faucet = 1.1B udns
+  # El faucet se tomará de la cuenta 'bob'
+faucet:
+  name: bob # Especifica que bob es el nombre de la cuenta del faucet
+  coins: # Esto indica cuánto puede dispensar el faucet por solicitud, no su balance inicial
+  - 100000udns
+genesis:
+  app_state:
+    staking:
+      params:
+        bond_denom: udns
+    # No especifiques bank.balances para el faucet aquí si usas la cuenta de bob.
+    # Ignite CLI debería poblar bank.balances y bank.supply correctamente
+    # a partir de las secciones 'accounts' y 'validators'.
+    # bank:
+    #   balances: [] # Déjalo vacío o elimínalo para que Ignite lo genere
+    gov:
+      params:
+        min_deposit:
+          - denom: udns
+            amount: "10000000"
+        voting_period: "172800s"
+  chain_id: dnsblockchain

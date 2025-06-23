@@ -108,8 +108,8 @@ type App struct {
 }
 
 func init() {
-
-	sdk.DefaultBondDenom = "stake"
+	// Set DefaultBondDenom to your single token's denom
+	sdk.DefaultBondDenom = "udns"
 
 	var err error
 	clienthelpers.EnvPrefix = Name

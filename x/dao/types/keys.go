@@ -36,6 +36,9 @@ var (
 	// ActiveProposalQueueKeyPrefix es el prefijo para la cola de propuestas activas.
 	// La implementación exacta de la cola podría variar (ej. (EndTime, ProposalID) -> nil).
 	ActiveProposalQueueKeyPrefix = collections.NewPrefix("ActiveProposalQueue/")
+
+	// VoterPowerLotsKeyPrefix es el prefijo para almacenar los lotes de poder de voto.
+	VoterPowerLotsKeyPrefix = collections.NewPrefix("VoterPowerLots/value/")
 )
 
 // Función para generar la clave de una propuesta específica (opcional, pero útil)

@@ -12,5 +12,6 @@ const (
 	AttributeKeyVoter          = "voter"
 	AttributeKeyVoteOption     = "option"
 	AttributeKeyProposalStatus = "proposal_status"
+	AttributeKeyVotingPower    = "voting_power"
 	// AttributeKeyProposalType ya está definido en govtypes, podemos reusarlo
 )
