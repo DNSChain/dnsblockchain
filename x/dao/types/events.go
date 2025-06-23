@@ -5,7 +5,7 @@ const (
 	EventTypeSubmitProposal   = "submit_proposal"
 	EventTypeProposalVote     = "proposal_vote"
 	EventTypeProposalFinished = "proposal_finished"
-	// Añade más tipos de eventos según se necesiten
+	EventTypeProposalDeposit  = "proposal_deposit" // <-- NUEVO EVENTO
 
 	AttributeKeyProposalID     = "proposal_id"
 	AttributeKeyProposer       = "proposer"
@@ -13,5 +13,6 @@ const (
 	AttributeKeyVoteOption     = "option"
 	AttributeKeyProposalStatus = "proposal_status"
 	AttributeKeyVotingPower    = "voting_power"
-	// AttributeKeyProposalType ya está definido en govtypes, podemos reusarlo
+	AttributeKeyDepositAction  = "deposit_action" // "refunded" o "burned"
+	AttributeKeyDepositAmount  = "deposit_amount"
 )
