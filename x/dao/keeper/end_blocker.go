@@ -41,7 +41,7 @@ func (k Keeper) EndBlocker(ctx context.Context) error {
 	}
 
 	for i := range proposalsToProcess {
-		proposal := proposalsToProcess[i] // Evitar problemas de referencia de bucle en goroutines (no aplica aquí pero es buena práctica)
+		proposal := proposalsToProcess[i]
 		logger.Info("Processing proposal in EndBlocker", "proposalID", proposal.Id, "votingEndBlock", proposal.VotingEndBlock, "currentBlock", currentBlockHeight)
 
 		var yesVotes, noVotes, abstainVotes math.Int
@@ -52,8 +52,7 @@ func (k Keeper) EndBlocker(ctx context.Context) error {
 
 		prefixRange := collections.NewPrefixedPairRange[uint64, sdk.AccAddress](proposal.Id)
 		err = k.Votes.Walk(sdkCtx, prefixRange, func(key collections.Pair[uint64, sdk.AccAddress], vote types.Vote) (stop bool, err error) {
-			// votingPower := math.NewInt(1) // Placeholder - Se reemplaza por el poder de voto almacenado
-			votingPower := vote.VotingPower // Usar el poder de voto almacenado
+			votingPower := vote.VotingPower
 
 			switch vote.Option {
 			case types.VoteOption_VOTE_OPTION_YES:
@@ -63,6 +62,7 @@ func (k Keeper) EndBlocker(ctx context.Context) error {
 			case types.VoteOption_VOTE_OPTION_ABSTAIN:
 				abstainVotes = abstainVotes.Add(votingPower)
 			}
+			// totalVotingPowerVoted incluye el poder de los votos de abstención para el quórum
 			if vote.Option != types.VoteOption_VOTE_OPTION_UNSPECIFIED {
 				totalVotingPowerVoted = totalVotingPowerVoted.Add(votingPower)
 			}
@@ -81,74 +81,102 @@ func (k Keeper) EndBlocker(ctx context.Context) error {
 		proposal.NoVotes = noVotes
 		proposal.AbstainVotes = abstainVotes
 
-		passed := false
-		if totalVotingPowerVoted.IsZero() {
-			logger.Info("No votes with positive voting power cast for proposal", "proposalID", proposal.Id)
-		} else {
-			totalVotesNonAbstain := yesVotes.Add(noVotes)
-			if totalVotesNonAbstain.IsPositive() {
-				yesDec, convErr := math.LegacyNewDecFromStr(yesVotes.String())
-				if convErr != nil {
-					logger.Error("Error converting yesVotes to LegacyDec", "proposalID", proposal.Id, "error", convErr)
-					proposal.Status = types.ProposalStatus_PROPOSAL_STATUS_FAILED
-					if setErr := k.SetProposal(sdkCtx, proposal); setErr != nil {
-						logger.Error("Failed to set proposal to FAILED after dec conversion error (yesVotes)", "proposalID", proposal.Id, "error", setErr)
-					}
-					continue
-				}
+		// ---- Verificación de Quórum ----
+		hasQuorum := false
+		if proposal.TotalVotingPowerAtSnapshot.IsPositive() {
+			totalVotedDec, convErrVoted := math.LegacyNewDecFromStr(totalVotingPowerVoted.String())
+			totalSnapshotDec, convErrSnap := math.LegacyNewDecFromStr(proposal.TotalVotingPowerAtSnapshot.String())
 
-				// Decidir si el umbral se calcula contra el total de votos emitidos (no abstenciones)
-				// o contra el TotalVotingPowerAtSnapshot de la propuesta.
-				// Por ahora, lo mantenemos contra totalVotesNonAbstain.
-				// Si se quisiera contra el snapshot total:
-				// denominatorDec, convErr := math.LegacyNewDecFromStr(proposal.TotalVotingPowerAtSnapshot.String())
-				denominatorDec, convErr := math.LegacyNewDecFromStr(totalVotesNonAbstain.String())
-				if convErr != nil {
-					logger.Error("Error converting denominator to LegacyDec", "proposalID", proposal.Id, "error", convErr)
-					proposal.Status = types.ProposalStatus_PROPOSAL_STATUS_FAILED
-					if setErr := k.SetProposal(sdkCtx, proposal); setErr != nil {
-						logger.Error("Failed to set proposal to FAILED after dec conversion error (denominator)", "proposalID", proposal.Id, "error", setErr)
-					}
-					continue
-				}
-
-				minThresholdDec := params.MinYesThresholdPercent
-
-				if !denominatorDec.IsZero() { // Evitar división por cero
-					percentageYes := yesDec.Quo(denominatorDec)
-					if percentageYes.GTE(minThresholdDec) {
-						passed = true
-					}
-					logger.Info("Proposal tally", "proposalID", proposal.Id, "yes", yesVotes.String(), "no", noVotes.String(), "abstain", abstainVotes.String(), "total_voted_power", totalVotingPowerVoted.String(), "percentageYes", percentageYes.String(), "threshold", minThresholdDec.String(), "denominator_used", denominatorDec.String(), "passed", passed)
-				} else {
-					logger.Info("No YES/NO votes cast or denominator is zero", "proposalID", proposal.Id)
-				}
+			if convErrVoted != nil || convErrSnap != nil {
+				logger.Error("Error converting voting powers to LegacyDec for quorum check", "proposalID", proposal.Id, "errVoted", convErrVoted, "errSnap", convErrSnap)
+				proposal.Status = types.ProposalStatus_PROPOSAL_STATUS_FAILED
 			} else {
-				logger.Info("No YES/NO votes with positive power cast for proposal", "proposalID", proposal.Id)
+				// QuorumPercent ya es math.LegacyDec
+				if totalVotedDec.Quo(totalSnapshotDec).GTE(params.QuorumPercent) {
+					hasQuorum = true
+				}
+			}
+		} else if totalVotingPowerVoted.IsPositive() && params.QuorumPercent.IsZero() {
+			// Caso especial: snapshot es 0, pero alguien votó y quórum es 0%, se considera alcanzado.
+			hasQuorum = true
+		} else if proposal.TotalVotingPowerAtSnapshot.IsZero() && params.QuorumPercent.IsZero() {
+			// Caso especial: Si el snapshot es 0 y el quórum requerido es 0, cualquier voto (incluso 0 poder) lo cumple
+			// o si no hay votos, también se podría considerar que el quórum se cumple si es 0.
+			// Por seguridad, si el snapshot es 0, solo un quórum de 0% puede pasarlo, y solo si alguien votó.
+			// La lógica de `totalVotingPowerVoted.IsZero()` más abajo manejará el "no votos".
+			// Si no hay votos y el quórum es 0 y snapshot es 0, 'passed' quedará false.
+			// Si hubo votos y quórum es 0 y snapshot es 0, hasQuorum = true.
+			if params.QuorumPercent.IsZero() { // Solo si el quórum es cero y el snapshot es cero
+				hasQuorum = true // Permitir que proceda si el quórum es 0, incluso con snapshot 0
 			}
 		}
 
-		depositToHandle := params.ProposalSubmissionDeposit // Depósito general por defecto
+		logger.Info("Quorum check", "proposalID", proposal.Id, "totalVotingPowerVoted", totalVotingPowerVoted.String(), "totalVotingPowerAtSnapshot", proposal.TotalVotingPowerAtSnapshot.String(), "quorumParam", params.QuorumPercent.String(), "hasQuorum", hasQuorum)
+
+		passed := false
+		if proposal.Status == types.ProposalStatus_PROPOSAL_STATUS_VOTING_PERIOD && hasQuorum { // Solo si estaba en votación y tiene quórum
+			if totalVotingPowerVoted.IsZero() {
+				logger.Info("No votes with positive voting power cast for proposal (even if quorum met with 0 snapshot/0 quorum)", "proposalID", proposal.Id)
+			} else {
+				totalVotesNonAbstain := yesVotes.Add(noVotes)
+				if totalVotesNonAbstain.IsPositive() {
+					yesDec, convErrYes := math.LegacyNewDecFromStr(yesVotes.String())
+					if convErrYes != nil {
+						logger.Error("Error converting yesVotes to LegacyDec", "proposalID", proposal.Id, "error", convErrYes)
+						proposal.Status = types.ProposalStatus_PROPOSAL_STATUS_FAILED
+					} else {
+						denominatorDec, convErrDen := math.LegacyNewDecFromStr(totalVotesNonAbstain.String())
+						if convErrDen != nil {
+							logger.Error("Error converting totalVotesNonAbstain to LegacyDec", "proposalID", proposal.Id, "error", convErrDen)
+							proposal.Status = types.ProposalStatus_PROPOSAL_STATUS_FAILED
+						} else {
+							minThresholdDec := params.MinYesThresholdPercent
+							if !denominatorDec.IsZero() {
+								percentageYes := yesDec.Quo(denominatorDec)
+								if percentageYes.GTE(minThresholdDec) {
+									passed = true
+								}
+								logger.Info("Proposal tally", "proposalID", proposal.Id, "yes", yesVotes.String(), "no", noVotes.String(), "abstain", abstainVotes.String(), "total_voted_power", totalVotingPowerVoted.String(), "percentageYes", percentageYes.String(), "threshold", minThresholdDec.String(), "denominator_used", denominatorDec.String(), "passed", passed)
+							} else {
+								logger.Info("Denominator for threshold calculation is zero (no YES/NO votes with power)", "proposalID", proposal.Id)
+							}
+						}
+					}
+				} else {
+					logger.Info("No YES/NO votes with positive power cast for proposal", "proposalID", proposal.Id)
+				}
+			}
+		} else if proposal.Status == types.ProposalStatus_PROPOSAL_STATUS_VOTING_PERIOD && !hasQuorum { // Estaba en votación pero no alcanzó quórum
+			logger.Info("Proposal rejected due to not meeting quorum", "proposalID", proposal.Id)
+			proposal.Status = types.ProposalStatus_PROPOSAL_STATUS_REJECTED // Marcar como rechazada por falta de quórum
+		}
+
+		// ---- Lógica de manejo de depósitos y ejecución ----
+		depositToHandle := params.ProposalSubmissionDeposit
 		var proposalContent types.ProposalContent
+		// isAddTld := false // Ya no se usa explícitamente
 		if err := k.cdc.UnpackAny(proposal.Content, &proposalContent); err == nil {
 			if _, ok := proposalContent.(*types.AddTldProposalContent); ok {
 				depositToHandle = params.AddTldProposalCost
+				// isAddTld = true
 			}
 		} else {
 			logger.Error("Failed to unpack proposal content for deposit handling in EndBlocker", "proposalID", proposal.Id, "error", err)
+			// Si no se puede desempaquetar el contenido, podría ser una razón para marcarla como FAILED
+			if proposal.Status == types.ProposalStatus_PROPOSAL_STATUS_VOTING_PERIOD { // Solo si no fue rechazada por quórum
+				proposal.Status = types.ProposalStatus_PROPOSAL_STATUS_FAILED
+			}
 		}
 
-		if passed {
+		if passed { // Solo si pasó la votación Y el quórum
 			proposal.Status = types.ProposalStatus_PROPOSAL_STATUS_PASSED
-			logger.Info("Proposal passed", "proposalID", proposal.Id)
+			logger.Info("Proposal passed voting and quorum", "proposalID", proposal.Id)
 
-			execErr := k.executeProposal(sdkCtx, proposal) // Pasamos la 'proposal' actualizada con los conteos
+			execErr := k.executeProposal(sdkCtx, proposal)
 			if execErr != nil {
 				logger.Error("Failed to execute proposal", "proposalID", proposal.Id, "error", execErr)
 				proposal.Status = types.ProposalStatus_PROPOSAL_STATUS_FAILED
-				// Si la ejecución falla, el depósito específico de TLD (o general) se quema
 				if !depositToHandle.IsZero() {
-					// No necesitamos el proposerAddr para quemar desde el módulo
 					if errBurn := k.bankKeeper.BurnCoins(sdkCtx, types.ModuleName, depositToHandle); errBurn != nil {
 						logger.Error("Failed to burn deposit after execution failure", "proposalID", proposal.Id, "deposit", depositToHandle.String(), "error", errBurn)
 					} else {
@@ -158,7 +186,6 @@ func (k Keeper) EndBlocker(ctx context.Context) error {
 			} else {
 				proposal.Status = types.ProposalStatus_PROPOSAL_STATUS_EXECUTED
 				logger.Info("Proposal executed successfully", "proposalID", proposal.Id)
-				// Si la ejecución es exitosa, el depósito (general o TLD) se devuelve
 				if !depositToHandle.IsZero() {
 					proposerAddr, addrErr := k.addressCodec.StringToBytes(proposal.Proposer)
 					if addrErr != nil {
@@ -172,25 +199,24 @@ func (k Keeper) EndBlocker(ctx context.Context) error {
 					}
 				}
 			}
-		} else { // Propuesta no pasó la votación
-			if proposal.Status == types.ProposalStatus_PROPOSAL_STATUS_VOTING_PERIOD { // Solo cambiar a REJECTED si aún estaba en votación
-				proposal.Status = types.ProposalStatus_PROPOSAL_STATUS_REJECTED
+		} else { // No pasó la votación (ya sea por umbral o por quórum)
+			// Si ya se marcó como REJECTED (por quórum) o FAILED (por error de unpack), no cambiar estado.
+			if proposal.Status == types.ProposalStatus_PROPOSAL_STATUS_VOTING_PERIOD {
+				proposal.Status = types.ProposalStatus_PROPOSAL_STATUS_REJECTED // No pasó el umbral de SÍ
+				logger.Info("Proposal rejected (did not pass YES threshold)", "proposalID", proposal.Id)
 			}
-			logger.Info("Proposal rejected or failed (did not pass vote)", "proposalID", proposal.Id, "status", proposal.Status.String())
-			// Quemar depósito si la propuesta es rechazada
-			if proposal.Status == types.ProposalStatus_PROPOSAL_STATUS_REJECTED && !depositToHandle.IsZero() {
+			// Quemar depósito si la propuesta es rechazada o falló (y el depósito no es cero)
+			if (proposal.Status == types.ProposalStatus_PROPOSAL_STATUS_REJECTED || proposal.Status == types.ProposalStatus_PROPOSAL_STATUS_FAILED) && !depositToHandle.IsZero() {
 				if errBurn := k.bankKeeper.BurnCoins(sdkCtx, types.ModuleName, depositToHandle); errBurn != nil {
-					logger.Error("Failed to burn deposit for rejected proposal", "proposalID", proposal.Id, "deposit", depositToHandle.String(), "error", errBurn)
+					logger.Error("Failed to burn deposit for rejected/failed proposal", "proposalID", proposal.Id, "deposit", depositToHandle.String(), "error", errBurn)
 				} else {
-					logger.Info("Deposit burned for rejected proposal", "proposalID", proposal.Id, "amount", depositToHandle.String())
+					logger.Info("Deposit burned for rejected/failed proposal", "proposalID", proposal.Id, "amount", depositToHandle.String())
 				}
 			}
 		}
 
-		// Actualizar la propuesta en el store con el estado final y los conteos
 		if err := k.SetProposal(sdkCtx, proposal); err != nil {
 			logger.Error("Failed to set proposal status after processing", "proposalID", proposal.Id, "error", err)
-			// Considerar si se debe continuar con otras propuestas o devolver error
 			return errorsmod.Wrapf(err, "failed to set proposal %d status after processing", proposal.Id)
 		}
 
@@ -216,7 +242,7 @@ func (k Keeper) executeProposal(ctx sdk.Context, proposal types.Proposal) error 
 	case *types.AddTldProposalContent:
 		return k.executeAddTldProposal(ctx, c)
 	case *types.RequestTokensProposalContent:
-		return k.executeRequestTokensProposal(ctx, c, proposal) // Pasar toda la propuesta
+		return k.executeRequestTokensProposal(ctx, c, proposal)
 	default:
 		return errorsmod.Wrapf(types.ErrInvalidProposalContent, "unknown proposal content type: %T", c)
 	}
@@ -247,35 +273,26 @@ func (k Keeper) executeRequestTokensProposal(ctx sdk.Context, content *types.Req
 
 	err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, sdk.AccAddress(recipient), content.AmountRequested)
 	if err != nil {
-		// Si falla el envío, intentar quemar las monedas minteadas para mantener la consistencia del suministro
 		burnErr := k.bankKeeper.BurnCoins(ctx, types.ModuleName, content.AmountRequested)
 		if burnErr != nil {
 			k.Logger(ctx).Error("CRITICAL: failed to burn coins after failed send in proposal execution", "burn_error", burnErr, "original_send_error", err)
-			// Podríamos incluso entrar en pánico aquí si la quema falla, ya que el suministro de tokens estaría inflado.
 		}
 		return errorsmod.Wrapf(err, "failed to send coins to recipient for proposal execution")
 	}
 
-	// Otorgar poder de voto al destinatario por los tokens recibidos, si son del denom de voto
 	for _, coin := range content.AmountRequested {
 		if coin.Denom == params.VotingTokenDenom && coin.Amount.IsPositive() {
 			lot := types.VoterVotingPowerLot{
 				VoterAddress:        content.RecipientAddress,
-				GrantedByProposalId: proposal.Id, // Usamos el ID de la propuesta que se está ejecutando
+				GrantedByProposalId: proposal.Id,
 				InitialAmount:       coin.Amount,
 				GrantBlockHeight:    uint64(ctx.BlockHeight()),
 			}
 			recipientAccAddr := sdk.AccAddress(recipient)
-			// La clave debe ser única para cada lote. Usar (VoterAddr, GrantingProposalID) podría no ser único si una cuenta recibe múltiples veces de la misma propuesta (aunque no es el caso ahora).
-			// Una forma de asegurar unicidad si eso fuera posible sería (VoterAddr, GrantingProposalID, GrantBlockHeight) o una secuencia para lotes.
-			// Por ahora, (VoterAddr, GrantingProposalID) es suficiente ya que una propuesta RequestTokens se ejecuta una vez.
 			lotKey := collections.Join(recipientAccAddr, proposal.Id)
 
 			if errSetLot := k.VoterPowerLots.Set(ctx, lotKey, lot); errSetLot != nil {
 				k.Logger(ctx).Error("CRITICAL: Failed to set voter power lot after token grant", "recipient", content.RecipientAddress, "proposalID", proposal.Id, "amount", coin.String(), "error", errSetLot)
-				// Podríamos considerar devolver este error para fallar la ejecución de la propuesta,
-				// lo que haría que el depósito se queme si la propuesta había pasado.
-				// return errorsmod.Wrap(errSetLot, "failed to record voting power lot")
 			}
 			k.Logger(ctx).Info("Voting power lot granted", "recipient", content.RecipientAddress, "proposalID", proposal.Id, "amount", coin.String())
 		}

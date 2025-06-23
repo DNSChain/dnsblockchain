@@ -17,7 +17,8 @@ func NewParams(
 	votingTokenDenom string,
 	votingPowerDecayDurationBlocks uint64,
 	validatorRewardVotingTokensAmount sdk.Coin,
-	addTldProposalCost sdk.Coins, // <-- NUEVO PARÁMETRO
+	addTldProposalCost sdk.Coins,
+	quorumPercent math.LegacyDec, // <-- NUEVO PARÁMETRO
 ) DaoParams {
 	return DaoParams{
 		VotingPeriodBlocks:                votingPeriodBlocks,
@@ -26,26 +27,27 @@ func NewParams(
 		VotingTokenDenom:                  votingTokenDenom,
 		VotingPowerDecayDurationBlocks:    votingPowerDecayDurationBlocks,
 		ValidatorRewardVotingTokensAmount: validatorRewardVotingTokensAmount,
-		AddTldProposalCost:                addTldProposalCost, // <-- ASIGNAR
+		AddTldProposalCost:                addTldProposalCost,
+		QuorumPercent:                     quorumPercent, // <-- ASIGNAR
 	}
 }
 
 // DefaultParams returns a default set of parameters
 func DefaultParams() DaoParams {
-	votingPeriod := uint64(500)  // Ejemplo: 500 bloques
-	decayDuration := uint64(100) // Para pruebas (ej. 6 meses en bloques sería mucho más alto)
-	votingTokenDenom := "udns"   // <--- TU TOKEN ÚNICO
-	// Recompensa de validadores por participar en DAO, podría ser 0 si no se usa este mecanismo
+	votingPeriod := uint64(500)
+	decayDuration := uint64(100)
+	votingTokenDenom := "udns"
 	validatorRewardAmount := sdk.NewInt64Coin(votingTokenDenom, 0)
 
 	return NewParams(
 		votingPeriod,
-		sdk.NewCoins(sdk.NewInt64Coin(votingTokenDenom, 10000000)), // Depósito general: 10 udns (10*10^6 udns)
-		math.LegacyMustNewDecFromStr("0.50"),                       // 50% de umbral SÍ
+		sdk.NewCoins(sdk.NewInt64Coin(votingTokenDenom, 10000000)),
+		math.LegacyMustNewDecFromStr("0.50"),
 		votingTokenDenom,
-		decayDuration, // Ejemplo: el poder de voto decae sobre 100 bloques
+		decayDuration,
 		validatorRewardAmount,
-		sdk.NewCoins(sdk.NewInt64Coin(votingTokenDenom, 5000000)), // Costo de propuesta TLD: 5 udns (5*10^6 udns)
+		sdk.NewCoins(sdk.NewInt64Coin(votingTokenDenom, 5000000)),
+		math.LegacyMustNewDecFromStr("0.334"), // Quórum del 33.4% por defecto
 	)
 }
 
@@ -74,10 +76,8 @@ func (p DaoParams) Validate() error {
 	if err := sdk.ValidateDenom(p.VotingTokenDenom); err != nil {
 		return errors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid voting token denom %s: %v", p.VotingTokenDenom, err)
 	}
-	// votingPowerDecayDurationBlocks puede ser 0, lo que significa que el poder no decae.
-	// if p.VotingPowerDecayDurationBlocks == 0 {
-	// 	return fmt.Errorf("voting power decay duration blocks cannot be zero")
-	// }
+	// votingPowerDecayDurationBlocks puede ser 0
+
 	if err := p.ValidatorRewardVotingTokensAmount.Validate(); err != nil {
 		return errors.Wrapf(sdkerrors.ErrInvalidCoins, "invalid validator reward voting tokens amount: %v", err)
 	}
@@ -90,6 +90,17 @@ func (p DaoParams) Validate() error {
 	}
 	if !p.AddTldProposalCost.IsAllPositive() && !p.AddTldProposalCost.IsZero() {
 		return errors.Wrap(sdkerrors.ErrInvalidCoins, "add TLD proposal cost must be positive if not zero")
+	}
+
+	// Validar QuorumPercent
+	if p.QuorumPercent.IsNil() {
+		return fmt.Errorf("quorum percent cannot be nil")
+	}
+	if p.QuorumPercent.IsNegative() {
+		return fmt.Errorf("quorum percent cannot be negative: %s", p.QuorumPercent)
+	}
+	if p.QuorumPercent.GT(math.LegacyOneDec()) {
+		return fmt.Errorf("quorum percent cannot be greater than 1: %s", p.QuorumPercent)
 	}
 
 	return nil

@@ -20,6 +20,11 @@ message DaoParams { // Nombre del mensaje: DaoParams
     (gogoproto.nullable) = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
   ];
+
+  // Minimum percentage of TotalVotingPowerAtSnapshot that must participate (vote YES, NO, or ABSTAIN)
+  // for a proposal to be considered valid for tallying. (e.g., "0.33" for 33%).
+  // Stored as string, validated as Dec in Go.
+  string quorum_percent = 8 [(gogoproto.customtype) = "cosmossdk.io/math.LegacyDec", (gogoproto.nullable) = false];
   
   // Minimum percentage of YES votes (of the total voting power that voted, or total at snapshot)
   // for a proposal to pass. (e.g., "0.50" for 50%). Stored as string, validated as Dec in Go.
