@@ -99,18 +99,9 @@ Ignite CLI offers options for scaffolding a frontend:
 To release a new version of your blockchain, create and push a new tag with a v prefix. A new draft release with the configured targets will be created.
 
 git tag v0.1.0
+
 git push origin v0.1.0
 
-💾 Installation
-To install the latest version of your blockchain node's binary (once you have releases on GitHub):
-
-curl https://get.ignite.com/DNSChain/dnsblockchain@latest! | sudo bash
-
-Replace YOUR_USERNAME/dnsblockchain with your GitHub username and repository name. Learn more about the install process.
-📚 Learn More
-Ignite CLI: ignite.com/cli | Ignite CLI Documentation
-Cosmos SDK: Cosmos SDK Documentation
-CometBFT: CometBFT Documentation
 💬 Join the Conversation
-GitHub Discussions: https://github.com/DNSChain/dnsblockchain/discussions
-Bitcoin Talk: https://bitcointalk.org/index.php?topic=5547781.0
+- GitHub Discussions: https://github.com/DNSChain/dnsblockchain/discussions
+- Bitcoin Talk: https://bitcointalk.org/index.php?topic=5547781.0
