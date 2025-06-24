@@ -54,7 +54,6 @@ We are looking for passionate contributors interested in decentralization, DNS, 
 
 To start developing or testing DNS Chain locally:
 
-```bash
 # Clone the repository (replace with your URL)
 git clone https://github.com/YOUR_USERNAME/dnsblockchain.git
 cd dnsblockchain
