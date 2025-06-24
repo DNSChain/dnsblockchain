@@ -23,6 +23,34 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					Short:          "Query a proposal by ID",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{{ProtoField: "proposal_id"}},
 				},
+				{ // NUEVO
+					RpcMethod: "Proposals",
+					Use:       "proposals [--proposal-status <status>] [--voter <address>] [--proposer <address>] [--page-key <key>] [--offset <offset>] [--limit <limit>] [--count-total]",
+					Short:     "Query proposals with optional filters and pagination",
+					Long:      "Query proposals with optional filters by status, proposer, or voter (Note: voter filter might require specific implementation). Supports pagination.",
+					Example:   `dnsblockchaind query dao proposals --proposal-status PROPOSAL_STATUS_VOTING_PERIOD`,
+				},
+				{ // NUEVO
+					RpcMethod: "Vote",
+					Use:       "vote [proposal-id] [voter-address]",
+					Short:     "Query a specific vote on a proposal by a voter",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "proposal_id"},
+						{ProtoField: "voter"},
+					},
+				},
+				{ // NUEVO
+					RpcMethod:      "Votes",
+					Use:            "votes [proposal-id] [--page-key <key>] [--offset <offset>] [--limit <limit>] [--count-total]",
+					Short:          "Query all votes on a proposal with optional pagination",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{{ProtoField: "proposal_id"}},
+				},
+				{ // NUEVO
+					RpcMethod:      "TallyResult",
+					Use:            "tally [proposal-id]",
+					Short:          "Query the tally result of a proposal",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{{ProtoField: "proposal_id"}},
+				},
 				// this line is used by ignite scaffolding # autocli/query
 			},
 		},

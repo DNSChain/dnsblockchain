@@ -5,8 +5,9 @@ package types
 
 import (
 	context "context"
+	cosmossdk_io_math "cosmossdk.io/math"
 	fmt "fmt"
-	_ "github.com/cosmos/cosmos-sdk/types/query"
+	query "github.com/cosmos/cosmos-sdk/types/query"
 	_ "github.com/cosmos/cosmos-sdk/types/tx/amino"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	grpc1 "github.com/cosmos/gogoproto/grpc"
@@ -70,7 +71,6 @@ var xxx_messageInfo_QueryParamsRequest proto.InternalMessageInfo
 
 // QueryParamsResponse is response type for the Query/Params RPC method.
 type QueryParamsResponse struct {
-	// params holds all the parameters of this module.
 	Params DaoParams `protobuf:"bytes,1,opt,name=params,proto3" json:"params"`
 }
 
@@ -204,44 +204,543 @@ func (m *QueryProposalResponse) GetProposal() Proposal {
 	return Proposal{}
 }
 
+// QueryProposalsRequest is request type for the Query/Proposals RPC method.
+type QueryProposalsRequest struct {
+	// proposal_status defines the status of the proposals.
+	ProposalStatus ProposalStatus `protobuf:"varint,1,opt,name=proposal_status,json=proposalStatus,proto3,enum=dnsblockchain.dao.v1.ProposalStatus" json:"proposal_status,omitempty"`
+	// voter defines the voter address of the proposals.
+	Voter string `protobuf:"bytes,2,opt,name=voter,proto3" json:"voter,omitempty"`
+	// proposer defines the proposer address of the proposals.
+	Proposer string `protobuf:"bytes,3,opt,name=proposer,proto3" json:"proposer,omitempty"`
+	// pagination defines an optional pagination for the request.
+	Pagination *query.PageRequest `protobuf:"bytes,4,opt,name=pagination,proto3" json:"pagination,omitempty"`
+}
+
+func (m *QueryProposalsRequest) Reset()         { *m = QueryProposalsRequest{} }
+func (m *QueryProposalsRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryProposalsRequest) ProtoMessage()    {}
+func (*QueryProposalsRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_83e0eded6bbe4bd8, []int{4}
+}
+func (m *QueryProposalsRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryProposalsRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryProposalsRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryProposalsRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryProposalsRequest.Merge(m, src)
+}
+func (m *QueryProposalsRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryProposalsRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryProposalsRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryProposalsRequest proto.InternalMessageInfo
+
+func (m *QueryProposalsRequest) GetProposalStatus() ProposalStatus {
+	if m != nil {
+		return m.ProposalStatus
+	}
+	return ProposalStatus_PROPOSAL_STATUS_UNSPECIFIED
+}
+
+func (m *QueryProposalsRequest) GetVoter() string {
+	if m != nil {
+		return m.Voter
+	}
+	return ""
+}
+
+func (m *QueryProposalsRequest) GetProposer() string {
+	if m != nil {
+		return m.Proposer
+	}
+	return ""
+}
+
+func (m *QueryProposalsRequest) GetPagination() *query.PageRequest {
+	if m != nil {
+		return m.Pagination
+	}
+	return nil
+}
+
+// QueryProposalsResponse is response type for the Query/Proposals RPC method.
+type QueryProposalsResponse struct {
+	Proposals []Proposal `protobuf:"bytes,1,rep,name=proposals,proto3" json:"proposals"`
+	// pagination defines the pagination in the response.
+	Pagination *query.PageResponse `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
+}
+
+func (m *QueryProposalsResponse) Reset()         { *m = QueryProposalsResponse{} }
+func (m *QueryProposalsResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryProposalsResponse) ProtoMessage()    {}
+func (*QueryProposalsResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_83e0eded6bbe4bd8, []int{5}
+}
+func (m *QueryProposalsResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryProposalsResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryProposalsResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryProposalsResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryProposalsResponse.Merge(m, src)
+}
+func (m *QueryProposalsResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryProposalsResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryProposalsResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryProposalsResponse proto.InternalMessageInfo
+
+func (m *QueryProposalsResponse) GetProposals() []Proposal {
+	if m != nil {
+		return m.Proposals
+	}
+	return nil
+}
+
+func (m *QueryProposalsResponse) GetPagination() *query.PageResponse {
+	if m != nil {
+		return m.Pagination
+	}
+	return nil
+}
+
+// QueryVoteRequest is request type for the Query/Vote RPC method.
+type QueryVoteRequest struct {
+	ProposalId uint64 `protobuf:"varint,1,opt,name=proposal_id,json=proposalId,proto3" json:"proposal_id,omitempty"`
+	Voter      string `protobuf:"bytes,2,opt,name=voter,proto3" json:"voter,omitempty"`
+}
+
+func (m *QueryVoteRequest) Reset()         { *m = QueryVoteRequest{} }
+func (m *QueryVoteRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryVoteRequest) ProtoMessage()    {}
+func (*QueryVoteRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_83e0eded6bbe4bd8, []int{6}
+}
+func (m *QueryVoteRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryVoteRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryVoteRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryVoteRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryVoteRequest.Merge(m, src)
+}
+func (m *QueryVoteRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryVoteRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryVoteRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryVoteRequest proto.InternalMessageInfo
+
+func (m *QueryVoteRequest) GetProposalId() uint64 {
+	if m != nil {
+		return m.ProposalId
+	}
+	return 0
+}
+
+func (m *QueryVoteRequest) GetVoter() string {
+	if m != nil {
+		return m.Voter
+	}
+	return ""
+}
+
+// QueryVoteResponse is response type for the Query/Vote RPC method.
+type QueryVoteResponse struct {
+	Vote Vote `protobuf:"bytes,1,opt,name=vote,proto3" json:"vote"`
+}
+
+func (m *QueryVoteResponse) Reset()         { *m = QueryVoteResponse{} }
+func (m *QueryVoteResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryVoteResponse) ProtoMessage()    {}
+func (*QueryVoteResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_83e0eded6bbe4bd8, []int{7}
+}
+func (m *QueryVoteResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryVoteResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryVoteResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryVoteResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryVoteResponse.Merge(m, src)
+}
+func (m *QueryVoteResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryVoteResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryVoteResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryVoteResponse proto.InternalMessageInfo
+
+func (m *QueryVoteResponse) GetVote() Vote {
+	if m != nil {
+		return m.Vote
+	}
+	return Vote{}
+}
+
+// QueryVotesRequest is request type for the Query/Votes RPC method.
+type QueryVotesRequest struct {
+	ProposalId uint64 `protobuf:"varint,1,opt,name=proposal_id,json=proposalId,proto3" json:"proposal_id,omitempty"`
+	// pagination defines an optional pagination for the request.
+	Pagination *query.PageRequest `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
+}
+
+func (m *QueryVotesRequest) Reset()         { *m = QueryVotesRequest{} }
+func (m *QueryVotesRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryVotesRequest) ProtoMessage()    {}
+func (*QueryVotesRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_83e0eded6bbe4bd8, []int{8}
+}
+func (m *QueryVotesRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryVotesRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryVotesRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryVotesRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryVotesRequest.Merge(m, src)
+}
+func (m *QueryVotesRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryVotesRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryVotesRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryVotesRequest proto.InternalMessageInfo
+
+func (m *QueryVotesRequest) GetProposalId() uint64 {
+	if m != nil {
+		return m.ProposalId
+	}
+	return 0
+}
+
+func (m *QueryVotesRequest) GetPagination() *query.PageRequest {
+	if m != nil {
+		return m.Pagination
+	}
+	return nil
+}
+
+// QueryVotesResponse is response type for the Query/Votes RPC method.
+type QueryVotesResponse struct {
+	Votes []Vote `protobuf:"bytes,1,rep,name=votes,proto3" json:"votes"`
+	// pagination defines the pagination in the response.
+	Pagination *query.PageResponse `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
+}
+
+func (m *QueryVotesResponse) Reset()         { *m = QueryVotesResponse{} }
+func (m *QueryVotesResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryVotesResponse) ProtoMessage()    {}
+func (*QueryVotesResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_83e0eded6bbe4bd8, []int{9}
+}
+func (m *QueryVotesResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryVotesResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryVotesResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryVotesResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryVotesResponse.Merge(m, src)
+}
+func (m *QueryVotesResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryVotesResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryVotesResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryVotesResponse proto.InternalMessageInfo
+
+func (m *QueryVotesResponse) GetVotes() []Vote {
+	if m != nil {
+		return m.Votes
+	}
+	return nil
+}
+
+func (m *QueryVotesResponse) GetPagination() *query.PageResponse {
+	if m != nil {
+		return m.Pagination
+	}
+	return nil
+}
+
+// TallyResult defines a standard tally for a proposal.
+type TallyResult struct {
+	YesCount     cosmossdk_io_math.Int `protobuf:"bytes,1,opt,name=yes_count,json=yesCount,proto3,customtype=cosmossdk.io/math.Int" json:"yes_count"`
+	AbstainCount cosmossdk_io_math.Int `protobuf:"bytes,2,opt,name=abstain_count,json=abstainCount,proto3,customtype=cosmossdk.io/math.Int" json:"abstain_count"`
+	NoCount      cosmossdk_io_math.Int `protobuf:"bytes,3,opt,name=no_count,json=noCount,proto3,customtype=cosmossdk.io/math.Int" json:"no_count"`
+}
+
+func (m *TallyResult) Reset()         { *m = TallyResult{} }
+func (m *TallyResult) String() string { return proto.CompactTextString(m) }
+func (*TallyResult) ProtoMessage()    {}
+func (*TallyResult) Descriptor() ([]byte, []int) {
+	return fileDescriptor_83e0eded6bbe4bd8, []int{10}
+}
+func (m *TallyResult) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *TallyResult) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_TallyResult.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *TallyResult) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TallyResult.Merge(m, src)
+}
+func (m *TallyResult) XXX_Size() int {
+	return m.Size()
+}
+func (m *TallyResult) XXX_DiscardUnknown() {
+	xxx_messageInfo_TallyResult.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_TallyResult proto.InternalMessageInfo
+
+// QueryTallyResultRequest is request type for the Query/Tally RPC method.
+type QueryTallyResultRequest struct {
+	ProposalId uint64 `protobuf:"varint,1,opt,name=proposal_id,json=proposalId,proto3" json:"proposal_id,omitempty"`
+}
+
+func (m *QueryTallyResultRequest) Reset()         { *m = QueryTallyResultRequest{} }
+func (m *QueryTallyResultRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryTallyResultRequest) ProtoMessage()    {}
+func (*QueryTallyResultRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_83e0eded6bbe4bd8, []int{11}
+}
+func (m *QueryTallyResultRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryTallyResultRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryTallyResultRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryTallyResultRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryTallyResultRequest.Merge(m, src)
+}
+func (m *QueryTallyResultRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryTallyResultRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryTallyResultRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryTallyResultRequest proto.InternalMessageInfo
+
+func (m *QueryTallyResultRequest) GetProposalId() uint64 {
+	if m != nil {
+		return m.ProposalId
+	}
+	return 0
+}
+
+// QueryTallyResultResponse is response type for the Query/Tally RPC method.
+type QueryTallyResultResponse struct {
+	Tally TallyResult `protobuf:"bytes,1,opt,name=tally,proto3" json:"tally"`
+}
+
+func (m *QueryTallyResultResponse) Reset()         { *m = QueryTallyResultResponse{} }
+func (m *QueryTallyResultResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryTallyResultResponse) ProtoMessage()    {}
+func (*QueryTallyResultResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_83e0eded6bbe4bd8, []int{12}
+}
+func (m *QueryTallyResultResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryTallyResultResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryTallyResultResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryTallyResultResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryTallyResultResponse.Merge(m, src)
+}
+func (m *QueryTallyResultResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryTallyResultResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryTallyResultResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryTallyResultResponse proto.InternalMessageInfo
+
+func (m *QueryTallyResultResponse) GetTally() TallyResult {
+	if m != nil {
+		return m.Tally
+	}
+	return TallyResult{}
+}
+
 func init() {
 	proto.RegisterType((*QueryParamsRequest)(nil), "dnsblockchain.dao.v1.QueryParamsRequest")
 	proto.RegisterType((*QueryParamsResponse)(nil), "dnsblockchain.dao.v1.QueryParamsResponse")
 	proto.RegisterType((*QueryProposalRequest)(nil), "dnsblockchain.dao.v1.QueryProposalRequest")
 	proto.RegisterType((*QueryProposalResponse)(nil), "dnsblockchain.dao.v1.QueryProposalResponse")
+	proto.RegisterType((*QueryProposalsRequest)(nil), "dnsblockchain.dao.v1.QueryProposalsRequest")
+	proto.RegisterType((*QueryProposalsResponse)(nil), "dnsblockchain.dao.v1.QueryProposalsResponse")
+	proto.RegisterType((*QueryVoteRequest)(nil), "dnsblockchain.dao.v1.QueryVoteRequest")
+	proto.RegisterType((*QueryVoteResponse)(nil), "dnsblockchain.dao.v1.QueryVoteResponse")
+	proto.RegisterType((*QueryVotesRequest)(nil), "dnsblockchain.dao.v1.QueryVotesRequest")
+	proto.RegisterType((*QueryVotesResponse)(nil), "dnsblockchain.dao.v1.QueryVotesResponse")
+	proto.RegisterType((*TallyResult)(nil), "dnsblockchain.dao.v1.TallyResult")
+	proto.RegisterType((*QueryTallyResultRequest)(nil), "dnsblockchain.dao.v1.QueryTallyResultRequest")
+	proto.RegisterType((*QueryTallyResultResponse)(nil), "dnsblockchain.dao.v1.QueryTallyResultResponse")
 }
 
 func init() { proto.RegisterFile("dnsblockchain/dao/v1/query.proto", fileDescriptor_83e0eded6bbe4bd8) }
 
 var fileDescriptor_83e0eded6bbe4bd8 = []byte{
-	// 417 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x92, 0xcf, 0x8a, 0xd4, 0x30,
-	0x1c, 0xc7, 0x9b, 0x65, 0x1d, 0xd6, 0xec, 0xc9, 0x58, 0x41, 0xcb, 0x92, 0x59, 0x8b, 0x87, 0x75,
-	0xc4, 0x86, 0xee, 0x22, 0x5e, 0xa5, 0x78, 0xf1, 0xa6, 0xbd, 0xad, 0x17, 0x49, 0xa7, 0xa1, 0x16,
-	0x67, 0xf2, 0xcb, 0x36, 0x9d, 0xc1, 0x41, 0xbc, 0xe8, 0x0b, 0x08, 0xde, 0x7c, 0x02, 0xf1, 0xe4,
-	0x63, 0xcc, 0x71, 0xc0, 0x8b, 0x27, 0x91, 0x19, 0xc1, 0xd7, 0x90, 0x26, 0xa9, 0x58, 0xad, 0xc3,
-	0x5c, 0x4a, 0xf8, 0xf5, 0xfb, 0xe7, 0xc3, 0x2f, 0xc1, 0xc7, 0xb9, 0xd4, 0xd9, 0x04, 0xc6, 0x2f,
-	0xc6, 0xcf, 0x79, 0x29, 0x59, 0xce, 0x81, 0xcd, 0x63, 0x76, 0x31, 0x13, 0xd5, 0x22, 0x52, 0x15,
-	0xd4, 0x40, 0xfc, 0x8e, 0x22, 0xca, 0x39, 0x44, 0xf3, 0x38, 0xb8, 0xc2, 0xa7, 0xa5, 0x04, 0x66,
-	0xbe, 0x56, 0x18, 0x8c, 0xc6, 0xa0, 0xa7, 0xa0, 0x59, 0xc6, 0xb5, 0xb0, 0x09, 0x6c, 0x1e, 0x67,
-	0xa2, 0xe6, 0x31, 0x53, 0xbc, 0x28, 0x25, 0xaf, 0x4b, 0x90, 0x4e, 0x7b, 0xb3, 0xb7, 0x56, 0xf1,
-	0x8a, 0x4f, 0xb5, 0x93, 0xd0, 0x5e, 0x49, 0x53, 0x6f, 0xff, 0xfb, 0x05, 0x14, 0x60, 0x8e, 0xac,
-	0x39, 0xb9, 0xe9, 0x51, 0x01, 0x50, 0x4c, 0x04, 0xe3, 0xaa, 0x64, 0x5c, 0x4a, 0xa8, 0x4d, 0xab,
-	0xcb, 0x0c, 0x7d, 0x4c, 0x9e, 0x34, 0x60, 0x8f, 0x4d, 0x51, 0x2a, 0x2e, 0x66, 0x42, 0xd7, 0xe1,
-	0x39, 0xbe, 0xda, 0x99, 0x6a, 0x05, 0x52, 0x0b, 0x92, 0xe0, 0x81, 0x05, 0xba, 0x8e, 0x8e, 0xd1,
-	0xc9, 0xe1, 0xe9, 0x30, 0xea, 0xdb, 0x44, 0xf4, 0x90, 0x83, 0x35, 0x26, 0x97, 0x97, 0xdf, 0x86,
-	0xde, 0xc7, 0x9f, 0x9f, 0x47, 0x28, 0x75, 0xce, 0xf0, 0x3e, 0xf6, 0x6d, 0x74, 0x05, 0x0a, 0x34,
-	0x9f, 0xb8, 0x4a, 0x32, 0xc4, 0x87, 0xca, 0x8d, 0x9e, 0x95, 0xb9, 0x29, 0xd8, 0x4f, 0x71, 0x3b,
-	0x7a, 0x94, 0x87, 0xe7, 0xf8, 0xda, 0x5f, 0x46, 0x47, 0xf5, 0x00, 0x1f, 0xb4, 0x32, 0xc7, 0x45,
-	0xfb, 0xb9, 0x5a, 0x67, 0xb2, 0xdf, 0x60, 0xa5, 0xbf, 0x5d, 0xa7, 0x9f, 0xf6, 0xf0, 0x25, 0x93,
-	0x4d, 0xde, 0x22, 0x3c, 0xb0, 0xec, 0xe4, 0xa4, 0x3f, 0xe4, 0xdf, 0x6d, 0x05, 0xb7, 0x77, 0x50,
-	0x5a, 0xd6, 0xf0, 0xd6, 0x9b, 0x2f, 0x3f, 0xde, 0xef, 0x51, 0x72, 0xc4, 0xb6, 0x5c, 0x37, 0xf9,
-	0x80, 0xf0, 0x41, 0x0b, 0x4b, 0x46, 0xdb, 0xd2, 0xbb, 0x4b, 0x0c, 0xee, 0xec, 0xa4, 0x75, 0x2c,
-	0xf7, 0x0c, 0x0b, 0x23, 0x77, 0xff, 0xc3, 0xe2, 0xf4, 0x9a, 0xbd, 0xfa, 0xe3, 0x62, 0x5e, 0x27,
-	0x67, 0xcb, 0x35, 0x45, 0xab, 0x35, 0x45, 0xdf, 0xd7, 0x14, 0xbd, 0xdb, 0x50, 0x6f, 0xb5, 0xa1,
-	0xde, 0xd7, 0x0d, 0xf5, 0x9e, 0xde, 0xe8, 0xe6, 0xbc, 0x34, 0x49, 0xf5, 0x42, 0x09, 0x9d, 0x0d,
-	0xcc, 0x6b, 0x3b, 0xfb, 0x15, 0x00, 0x00, 0xff, 0xff, 0x29, 0x06, 0x2b, 0xde, 0x5d, 0x03, 0x00,
-	0x00,
+	// 851 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x56, 0xdf, 0x4b, 0x23, 0x47,
+	0x1c, 0xcf, 0xc4, 0x44, 0x93, 0xb1, 0xb5, 0x75, 0x1a, 0xdb, 0x74, 0xb1, 0x1b, 0x5d, 0x44, 0x53,
+	0x5b, 0x77, 0x88, 0xd6, 0xb6, 0x28, 0x42, 0x89, 0xc5, 0x92, 0x87, 0x82, 0xdd, 0x96, 0x82, 0x7d,
+	0x91, 0x49, 0xb2, 0xc4, 0xc5, 0x64, 0x67, 0xcd, 0x4c, 0x42, 0x83, 0xf5, 0xa5, 0xfd, 0x03, 0x5a,
+	0x28, 0xa5, 0x70, 0xdc, 0xcb, 0x3d, 0x1c, 0xdc, 0xbd, 0xdd, 0x7f, 0x71, 0x3e, 0x0a, 0xf7, 0x72,
+	0xdc, 0x83, 0x88, 0x1e, 0xdc, 0xbf, 0x71, 0xec, 0xcc, 0x6c, 0x4c, 0xe2, 0x5e, 0xb2, 0x7a, 0xf7,
+	0x22, 0xbb, 0xb3, 0x9f, 0xcf, 0xe7, 0xfb, 0xf9, 0xfe, 0x98, 0xaf, 0x81, 0x73, 0x55, 0x97, 0x95,
+	0xeb, 0xb4, 0x72, 0x58, 0x39, 0x20, 0x8e, 0x8b, 0xab, 0x84, 0xe2, 0x76, 0x01, 0x1f, 0xb5, 0xec,
+	0x66, 0xc7, 0xf4, 0x9a, 0x94, 0x53, 0x94, 0xe9, 0x43, 0x98, 0x55, 0x42, 0xcd, 0x76, 0x41, 0x9b,
+	0x26, 0x0d, 0xc7, 0xa5, 0x58, 0xfc, 0x95, 0x40, 0x6d, 0xb9, 0x42, 0x59, 0x83, 0x32, 0x5c, 0x26,
+	0xcc, 0x96, 0x0a, 0xb8, 0x5d, 0x28, 0xdb, 0x9c, 0x14, 0xb0, 0x47, 0x6a, 0x8e, 0x4b, 0xb8, 0x43,
+	0x5d, 0x85, 0x9d, 0x0f, 0x0d, 0xeb, 0x91, 0x26, 0x69, 0x30, 0x05, 0xd1, 0x43, 0x21, 0x7e, 0x78,
+	0xf9, 0x3d, 0x53, 0xa3, 0x35, 0x2a, 0x1e, 0xb1, 0xff, 0xa4, 0x4e, 0x67, 0x6b, 0x94, 0xd6, 0xea,
+	0x36, 0x26, 0x9e, 0x83, 0x89, 0xeb, 0x52, 0x2e, 0xa2, 0x2a, 0x4d, 0x23, 0x03, 0xd1, 0x4f, 0xbe,
+	0xb1, 0x5d, 0x11, 0xc8, 0xb2, 0x8f, 0x5a, 0x36, 0xe3, 0xc6, 0x1e, 0xfc, 0xa8, 0xef, 0x94, 0x79,
+	0xd4, 0x65, 0x36, 0x2a, 0xc2, 0x71, 0x69, 0x28, 0x0b, 0xe6, 0x40, 0x7e, 0x72, 0x35, 0x67, 0x86,
+	0x55, 0xc2, 0xfc, 0x9e, 0x50, 0x49, 0x2c, 0xa6, 0x4f, 0xcf, 0x73, 0xb1, 0x47, 0xaf, 0x9e, 0x2c,
+	0x03, 0x4b, 0x31, 0x8d, 0x6f, 0x60, 0x46, 0x4a, 0x37, 0xa9, 0x47, 0x19, 0xa9, 0xab, 0x90, 0x28,
+	0x07, 0x27, 0x3d, 0x75, 0xb4, 0xef, 0x54, 0x45, 0x80, 0x84, 0x05, 0x83, 0xa3, 0x52, 0xd5, 0xd8,
+	0x83, 0x33, 0x03, 0x44, 0xe5, 0xea, 0x3b, 0x98, 0x0a, 0x60, 0xca, 0x97, 0x1e, 0xee, 0x2b, 0x60,
+	0x16, 0x13, 0xbe, 0x2d, 0xab, 0xcb, 0x32, 0x2e, 0xc0, 0x80, 0x76, 0x50, 0x08, 0xf4, 0x23, 0xfc,
+	0xa0, 0xeb, 0x8a, 0x71, 0xc2, 0x5b, 0x32, 0xf5, 0xa9, 0xd5, 0x85, 0xe1, 0x21, 0x7e, 0x16, 0x58,
+	0x6b, 0xca, 0xeb, 0x7b, 0x47, 0x19, 0x98, 0x6c, 0x53, 0x6e, 0x37, 0xb3, 0xf1, 0x39, 0x90, 0x4f,
+	0x5b, 0xf2, 0x05, 0x69, 0x41, 0x02, 0x76, 0x33, 0x3b, 0x26, 0x3e, 0x74, 0xdf, 0xd1, 0x0e, 0x84,
+	0xd7, 0xa3, 0x92, 0x4d, 0x88, 0xf4, 0x16, 0x4d, 0x39, 0x57, 0xa6, 0x3f, 0x57, 0xa6, 0x9c, 0x4c,
+	0x35, 0x57, 0xe6, 0x2e, 0xa9, 0xd9, 0xca, 0xbc, 0xd5, 0xc3, 0x34, 0x1e, 0x02, 0xf8, 0xf1, 0x60,
+	0x8a, 0xdd, 0xae, 0xa6, 0x03, 0x9b, 0x7e, 0x76, 0x63, 0x91, 0x0b, 0x78, 0x4d, 0x43, 0x3f, 0xf4,
+	0xd9, 0x8c, 0x0b, 0x9b, 0x4b, 0x23, 0x6d, 0x4a, 0x03, 0x7d, 0x3e, 0x4b, 0xf0, 0x43, 0x61, 0xf3,
+	0x57, 0xca, 0xed, 0xa8, 0xa3, 0x11, 0x5e, 0x56, 0xa3, 0x04, 0xa7, 0x7b, 0xa4, 0x54, 0xb2, 0x5f,
+	0xc1, 0x84, 0xff, 0x55, 0x0d, 0x8a, 0x16, 0x9e, 0xa7, 0xcf, 0x50, 0x39, 0x0a, 0xb4, 0xf1, 0x47,
+	0x8f, 0x14, 0x8b, 0x6c, 0x6b, 0x27, 0xa4, 0x28, 0x77, 0xe9, 0xdd, 0x7f, 0x40, 0x5d, 0x52, 0x15,
+	0x5e, 0xa5, 0xf2, 0xb5, 0xcc, 0x3a, 0xe8, 0xd9, 0xe8, 0x5c, 0x24, 0xfc, 0xdd, 0xf5, 0xea, 0x29,
+	0x80, 0x93, 0xbf, 0x90, 0x7a, 0xbd, 0x63, 0xd9, 0xac, 0x55, 0xe7, 0x68, 0x03, 0xa6, 0x3b, 0x36,
+	0xdb, 0xaf, 0xd0, 0x96, 0xcb, 0x45, 0x39, 0xd2, 0xc5, 0xcf, 0xfc, 0xc0, 0x2f, 0xce, 0x73, 0x33,
+	0x52, 0x9e, 0x55, 0x0f, 0x4d, 0x87, 0xe2, 0x06, 0xe1, 0x07, 0x66, 0xc9, 0xe5, 0x56, 0xaa, 0x63,
+	0xb3, 0x6d, 0x1f, 0x8e, 0x8a, 0xf0, 0x7d, 0x52, 0x66, 0x9c, 0x38, 0xae, 0xe2, 0xc7, 0xa3, 0xf0,
+	0xdf, 0x53, 0x1c, 0xa9, 0xf1, 0x2d, 0x4c, 0xb9, 0x54, 0xd1, 0xc7, 0xa2, 0xd0, 0x27, 0x5c, 0x2a,
+	0x98, 0xc6, 0x06, 0xfc, 0x44, 0x14, 0xb8, 0x27, 0x9b, 0x5b, 0xec, 0xa5, 0xec, 0x4d, 0xae, 0x6a,
+	0xd1, 0x16, 0x4c, 0x72, 0xff, 0x58, 0x8d, 0xdb, 0x7c, 0x78, 0x8b, 0x7a, 0x98, 0x41, 0xa7, 0x04,
+	0x6b, 0xf5, 0xc1, 0x04, 0x4c, 0x0a, 0x6d, 0xf4, 0x17, 0x80, 0xe3, 0x72, 0xa7, 0xa2, 0x7c, 0xb8,
+	0xc8, 0xcd, 0x2d, 0xae, 0x7d, 0x1e, 0x01, 0x29, 0x8d, 0x1a, 0x0b, 0x7f, 0x3e, 0x7b, 0xf9, 0x6f,
+	0x5c, 0x47, 0xb3, 0x78, 0xc8, 0xbf, 0x21, 0x74, 0x0f, 0xc0, 0x54, 0xb0, 0x03, 0xd0, 0xf2, 0x30,
+	0xf5, 0xfe, 0xe5, 0xae, 0x7d, 0x11, 0x09, 0xab, 0xbc, 0xac, 0x0b, 0x2f, 0x18, 0xad, 0xbc, 0xc1,
+	0x4b, 0xb0, 0x74, 0xf0, 0x71, 0x4f, 0x63, 0x4e, 0xd0, 0xdf, 0x00, 0xa6, 0xbb, 0xcb, 0x0d, 0x45,
+	0x89, 0xd8, 0x2d, 0xd4, 0x97, 0xd1, 0xc0, 0xca, 0xdf, 0x92, 0xf0, 0x37, 0x8f, 0x72, 0x23, 0xfc,
+	0xa1, 0xfb, 0x00, 0x26, 0xfc, 0xeb, 0x87, 0x16, 0x87, 0xe8, 0xf7, 0x2c, 0x3a, 0x6d, 0x69, 0x24,
+	0x4e, 0x59, 0xd8, 0x16, 0x16, 0xb6, 0xd0, 0xe6, 0xad, 0x4a, 0x84, 0xc5, 0xfd, 0xc7, 0xc7, 0x62,
+	0x3d, 0x9e, 0xa0, 0xff, 0x01, 0x4c, 0x8a, 0x8d, 0x82, 0x46, 0xc5, 0xed, 0x16, 0x2a, 0x3f, 0x1a,
+	0xa8, 0x1c, 0x6e, 0x0a, 0x87, 0xeb, 0x68, 0xed, 0x0e, 0x0e, 0xd1, 0xe3, 0x81, 0xc5, 0xb2, 0x32,
+	0x24, 0xec, 0xcd, 0x2b, 0xab, 0x99, 0x51, 0xe1, 0x6f, 0xe7, 0x55, 0xdc, 0xd1, 0xe2, 0xda, 0xe9,
+	0xa5, 0x0e, 0xce, 0x2e, 0x75, 0x70, 0x71, 0xa9, 0x83, 0x7f, 0xae, 0xf4, 0xd8, 0xd9, 0x95, 0x1e,
+	0x7b, 0x7e, 0xa5, 0xc7, 0x7e, 0xfb, 0xb4, 0x5f, 0xed, 0x77, 0xa1, 0xc7, 0x3b, 0x9e, 0xcd, 0xca,
+	0xe3, 0xe2, 0xc7, 0xd7, 0xda, 0xeb, 0x00, 0x00, 0x00, 0xff, 0xff, 0x76, 0xed, 0x89, 0x26, 0x6c,
+	0x0a, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -260,6 +759,14 @@ type QueryClient interface {
 	Params(ctx context.Context, in *QueryParamsRequest, opts ...grpc.CallOption) (*QueryParamsResponse, error)
 	// Proposal queries a proposal by ID.
 	Proposal(ctx context.Context, in *QueryProposalRequest, opts ...grpc.CallOption) (*QueryProposalResponse, error)
+	// Proposals queries all proposals based on given filters.
+	Proposals(ctx context.Context, in *QueryProposalsRequest, opts ...grpc.CallOption) (*QueryProposalsResponse, error)
+	// Vote queries a vote by proposal ID and voter address.
+	Vote(ctx context.Context, in *QueryVoteRequest, opts ...grpc.CallOption) (*QueryVoteResponse, error)
+	// Votes queries all votes by proposal ID.
+	Votes(ctx context.Context, in *QueryVotesRequest, opts ...grpc.CallOption) (*QueryVotesResponse, error)
+	// TallyResult queries the tally result of a proposal.
+	TallyResult(ctx context.Context, in *QueryTallyResultRequest, opts ...grpc.CallOption) (*QueryTallyResultResponse, error)
 }
 
 type queryClient struct {
@@ -288,12 +795,56 @@ func (c *queryClient) Proposal(ctx context.Context, in *QueryProposalRequest, op
 	return out, nil
 }
 
+func (c *queryClient) Proposals(ctx context.Context, in *QueryProposalsRequest, opts ...grpc.CallOption) (*QueryProposalsResponse, error) {
+	out := new(QueryProposalsResponse)
+	err := c.cc.Invoke(ctx, "/dnsblockchain.dao.v1.Query/Proposals", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) Vote(ctx context.Context, in *QueryVoteRequest, opts ...grpc.CallOption) (*QueryVoteResponse, error) {
+	out := new(QueryVoteResponse)
+	err := c.cc.Invoke(ctx, "/dnsblockchain.dao.v1.Query/Vote", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) Votes(ctx context.Context, in *QueryVotesRequest, opts ...grpc.CallOption) (*QueryVotesResponse, error) {
+	out := new(QueryVotesResponse)
+	err := c.cc.Invoke(ctx, "/dnsblockchain.dao.v1.Query/Votes", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) TallyResult(ctx context.Context, in *QueryTallyResultRequest, opts ...grpc.CallOption) (*QueryTallyResultResponse, error) {
+	out := new(QueryTallyResultResponse)
+	err := c.cc.Invoke(ctx, "/dnsblockchain.dao.v1.Query/TallyResult", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // QueryServer is the server API for Query service.
 type QueryServer interface {
 	// Parameters queries the parameters of the module.
 	Params(context.Context, *QueryParamsRequest) (*QueryParamsResponse, error)
 	// Proposal queries a proposal by ID.
 	Proposal(context.Context, *QueryProposalRequest) (*QueryProposalResponse, error)
+	// Proposals queries all proposals based on given filters.
+	Proposals(context.Context, *QueryProposalsRequest) (*QueryProposalsResponse, error)
+	// Vote queries a vote by proposal ID and voter address.
+	Vote(context.Context, *QueryVoteRequest) (*QueryVoteResponse, error)
+	// Votes queries all votes by proposal ID.
+	Votes(context.Context, *QueryVotesRequest) (*QueryVotesResponse, error)
+	// TallyResult queries the tally result of a proposal.
+	TallyResult(context.Context, *QueryTallyResultRequest) (*QueryTallyResultResponse, error)
 }
 
 // UnimplementedQueryServer can be embedded to have forward compatible implementations.
@@ -305,6 +856,18 @@ func (*UnimplementedQueryServer) Params(ctx context.Context, req *QueryParamsReq
 }
 func (*UnimplementedQueryServer) Proposal(ctx context.Context, req *QueryProposalRequest) (*QueryProposalResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Proposal not implemented")
+}
+func (*UnimplementedQueryServer) Proposals(ctx context.Context, req *QueryProposalsRequest) (*QueryProposalsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Proposals not implemented")
+}
+func (*UnimplementedQueryServer) Vote(ctx context.Context, req *QueryVoteRequest) (*QueryVoteResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Vote not implemented")
+}
+func (*UnimplementedQueryServer) Votes(ctx context.Context, req *QueryVotesRequest) (*QueryVotesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Votes not implemented")
+}
+func (*UnimplementedQueryServer) TallyResult(ctx context.Context, req *QueryTallyResultRequest) (*QueryTallyResultResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method TallyResult not implemented")
 }
 
 func RegisterQueryServer(s grpc1.Server, srv QueryServer) {
@@ -347,6 +910,78 @@ func _Query_Proposal_Handler(srv interface{}, ctx context.Context, dec func(inte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_Proposals_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryProposalsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).Proposals(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dnsblockchain.dao.v1.Query/Proposals",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).Proposals(ctx, req.(*QueryProposalsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_Vote_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryVoteRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).Vote(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dnsblockchain.dao.v1.Query/Vote",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).Vote(ctx, req.(*QueryVoteRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_Votes_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryVotesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).Votes(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dnsblockchain.dao.v1.Query/Votes",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).Votes(ctx, req.(*QueryVotesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_TallyResult_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryTallyResultRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).TallyResult(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dnsblockchain.dao.v1.Query/TallyResult",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).TallyResult(ctx, req.(*QueryTallyResultRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var Query_serviceDesc = _Query_serviceDesc
 var _Query_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "dnsblockchain.dao.v1.Query",
@@ -359,6 +994,22 @@ var _Query_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Proposal",
 			Handler:    _Query_Proposal_Handler,
+		},
+		{
+			MethodName: "Proposals",
+			Handler:    _Query_Proposals_Handler,
+		},
+		{
+			MethodName: "Vote",
+			Handler:    _Query_Vote_Handler,
+		},
+		{
+			MethodName: "Votes",
+			Handler:    _Query_Votes_Handler,
+		},
+		{
+			MethodName: "TallyResult",
+			Handler:    _Query_TallyResult_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -482,6 +1133,380 @@ func (m *QueryProposalResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
+func (m *QueryProposalsRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryProposalsRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryProposalsRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Pagination != nil {
+		{
+			size, err := m.Pagination.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintQuery(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x22
+	}
+	if len(m.Proposer) > 0 {
+		i -= len(m.Proposer)
+		copy(dAtA[i:], m.Proposer)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.Proposer)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.Voter) > 0 {
+		i -= len(m.Voter)
+		copy(dAtA[i:], m.Voter)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.Voter)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if m.ProposalStatus != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.ProposalStatus))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryProposalsResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryProposalsResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryProposalsResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Pagination != nil {
+		{
+			size, err := m.Pagination.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintQuery(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Proposals) > 0 {
+		for iNdEx := len(m.Proposals) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.Proposals[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintQuery(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0xa
+		}
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryVoteRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryVoteRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryVoteRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Voter) > 0 {
+		i -= len(m.Voter)
+		copy(dAtA[i:], m.Voter)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.Voter)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if m.ProposalId != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.ProposalId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryVoteResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryVoteResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryVoteResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	{
+		size, err := m.Vote.MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
+		i -= size
+		i = encodeVarintQuery(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0xa
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryVotesRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryVotesRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryVotesRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Pagination != nil {
+		{
+			size, err := m.Pagination.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintQuery(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x12
+	}
+	if m.ProposalId != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.ProposalId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryVotesResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryVotesResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryVotesResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Pagination != nil {
+		{
+			size, err := m.Pagination.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintQuery(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Votes) > 0 {
+		for iNdEx := len(m.Votes) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.Votes[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintQuery(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0xa
+		}
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *TallyResult) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *TallyResult) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *TallyResult) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	{
+		size := m.NoCount.Size()
+		i -= size
+		if _, err := m.NoCount.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintQuery(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x1a
+	{
+		size := m.AbstainCount.Size()
+		i -= size
+		if _, err := m.AbstainCount.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintQuery(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x12
+	{
+		size := m.YesCount.Size()
+		i -= size
+		if _, err := m.YesCount.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintQuery(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0xa
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryTallyResultRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryTallyResultRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryTallyResultRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.ProposalId != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.ProposalId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryTallyResultResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryTallyResultResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryTallyResultResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	{
+		size, err := m.Tally.MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
+		i -= size
+		i = encodeVarintQuery(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0xa
+	return len(dAtA) - i, nil
+}
+
 func encodeVarintQuery(dAtA []byte, offset int, v uint64) int {
 	offset -= sovQuery(v)
 	base := offset
@@ -532,6 +1557,149 @@ func (m *QueryProposalResponse) Size() (n int) {
 	var l int
 	_ = l
 	l = m.Proposal.Size()
+	n += 1 + l + sovQuery(uint64(l))
+	return n
+}
+
+func (m *QueryProposalsRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.ProposalStatus != 0 {
+		n += 1 + sovQuery(uint64(m.ProposalStatus))
+	}
+	l = len(m.Voter)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	l = len(m.Proposer)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	if m.Pagination != nil {
+		l = m.Pagination.Size()
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryProposalsResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if len(m.Proposals) > 0 {
+		for _, e := range m.Proposals {
+			l = e.Size()
+			n += 1 + l + sovQuery(uint64(l))
+		}
+	}
+	if m.Pagination != nil {
+		l = m.Pagination.Size()
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryVoteRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.ProposalId != 0 {
+		n += 1 + sovQuery(uint64(m.ProposalId))
+	}
+	l = len(m.Voter)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryVoteResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = m.Vote.Size()
+	n += 1 + l + sovQuery(uint64(l))
+	return n
+}
+
+func (m *QueryVotesRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.ProposalId != 0 {
+		n += 1 + sovQuery(uint64(m.ProposalId))
+	}
+	if m.Pagination != nil {
+		l = m.Pagination.Size()
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryVotesResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if len(m.Votes) > 0 {
+		for _, e := range m.Votes {
+			l = e.Size()
+			n += 1 + l + sovQuery(uint64(l))
+		}
+	}
+	if m.Pagination != nil {
+		l = m.Pagination.Size()
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *TallyResult) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = m.YesCount.Size()
+	n += 1 + l + sovQuery(uint64(l))
+	l = m.AbstainCount.Size()
+	n += 1 + l + sovQuery(uint64(l))
+	l = m.NoCount.Size()
+	n += 1 + l + sovQuery(uint64(l))
+	return n
+}
+
+func (m *QueryTallyResultRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.ProposalId != 0 {
+		n += 1 + sovQuery(uint64(m.ProposalId))
+	}
+	return n
+}
+
+func (m *QueryTallyResultResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = m.Tally.Size()
 	n += 1 + l + sovQuery(uint64(l))
 	return n
 }
@@ -803,6 +1971,1008 @@ func (m *QueryProposalResponse) Unmarshal(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if err := m.Proposal.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryProposalsRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryProposalsRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryProposalsRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ProposalStatus", wireType)
+			}
+			m.ProposalStatus = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.ProposalStatus |= ProposalStatus(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Voter", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Voter = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Proposer", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Proposer = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Pagination", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Pagination == nil {
+				m.Pagination = &query.PageRequest{}
+			}
+			if err := m.Pagination.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryProposalsResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryProposalsResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryProposalsResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Proposals", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Proposals = append(m.Proposals, Proposal{})
+			if err := m.Proposals[len(m.Proposals)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Pagination", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Pagination == nil {
+				m.Pagination = &query.PageResponse{}
+			}
+			if err := m.Pagination.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryVoteRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryVoteRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryVoteRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ProposalId", wireType)
+			}
+			m.ProposalId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.ProposalId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Voter", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Voter = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryVoteResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryVoteResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryVoteResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Vote", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.Vote.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryVotesRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryVotesRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryVotesRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ProposalId", wireType)
+			}
+			m.ProposalId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.ProposalId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Pagination", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Pagination == nil {
+				m.Pagination = &query.PageRequest{}
+			}
+			if err := m.Pagination.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryVotesResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryVotesResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryVotesResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Votes", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Votes = append(m.Votes, Vote{})
+			if err := m.Votes[len(m.Votes)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Pagination", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Pagination == nil {
+				m.Pagination = &query.PageResponse{}
+			}
+			if err := m.Pagination.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *TallyResult) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: TallyResult: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: TallyResult: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field YesCount", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.YesCount.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field AbstainCount", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.AbstainCount.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NoCount", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.NoCount.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryTallyResultRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryTallyResultRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryTallyResultRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ProposalId", wireType)
+			}
+			m.ProposalId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.ProposalId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryTallyResultResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryTallyResultResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryTallyResultResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Tally", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.Tally.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
