@@ -112,4 +112,5 @@ Ignite CLI: ignite.com/cli | Ignite CLI Documentation
 Cosmos SDK: Cosmos SDK Documentation
 CometBFT: CometBFT Documentation
 💬 Join the Conversation
-Discussion Forum (GitHub Discussions): https://github.com/DNSChain/dnsblockchain/discussions
+GitHub Discussions: https://github.com/DNSChain/dnsblockchain/discussions
+Bitcoin Talk: https://bitcointalk.org/index.php?topic=5547781.0
