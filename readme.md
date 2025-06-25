@@ -59,16 +59,16 @@ git clone https://github.com/DNSChain/dnsblockchain.git
 cd dnsblockchain
 
 # Install dependencies
-'''go mod tidy'''
+go mod tidy
 
 # Install Ignite
-Follow instructions in [https://ignite.com/]
+Follow instructions in https://ignite.com/
 
 # Build
-'''ignite chain build'''
+ignite chain build
 
 # Initialize and start the development chain
-'''ignite chain serve --reset-once'''
+ignite chain serve
 
 The serve command will provide you with:
 - Test account addresses (Alice, Bob) and their mnemonics.
