@@ -1,3 +1,4 @@
+// dnsblockchain/x/dnsblockchain/types/messages_domain.go
 package types
 
 import (
@@ -6,70 +7,112 @@ import (
 )
 
 // ---------- MsgCreateDomain ----------
-
-func NewMsgCreateDomain(creator string, name string, owner string, expiration uint64, ns string) *MsgCreateDomain {
+func NewMsgCreateDomain(creator string, name string, owner string, nsRecords []*NSRecordWithIP) *MsgCreateDomain {
 	return &MsgCreateDomain{
-		Creator:    creator,
-		Name:       name,
-		Owner:      owner,
-		Expiration: expiration,
-		Ns:         ns,
+		Creator:   creator,
+		Name:      name,
+		Owner:     owner,
+		NsRecords: nsRecords,
 	}
 }
 
-// ValidateBasic for MsgCreateDomain (auto-generated in tx.pb.go, but can be overridden or extended here if needed)
-// For now, we rely on the generated one and specific keeper validations.
-// func (msg *MsgCreateDomain) ValidateBasic() error {
-// 	// ...
-// 	return nil
-// }
+func (msg *MsgCreateDomain) ValidateBasic() error {
+	if _, err := sdk.AccAddressFromBech32(msg.Creator); err != nil {
+		return sdkerrors.ErrInvalidAddress.Wrapf("invalid creator address: %s", err)
+	}
+	if _, err := sdk.AccAddressFromBech32(msg.Owner); err != nil {
+		return sdkerrors.ErrInvalidAddress.Wrapf("invalid owner address: %s", err)
+	}
+	if msg.Name == "" {
+		return sdkerrors.ErrInvalidRequest.Wrap("name cannot be empty")
+	}
+	if len(msg.NsRecords) == 0 {
+		return sdkerrors.ErrInvalidRequest.Wrap("ns_records cannot be empty")
+	}
+	for i, nsEntry := range msg.NsRecords {
+		if nsEntry == nil {
+			return sdkerrors.ErrInvalidRequest.Wrapf("ns_records entry %d cannot be nil", i)
+		}
+		if nsEntry.Name == "" {
+			return sdkerrors.ErrInvalidRequest.Wrapf("name in ns_records entry %d cannot be empty", i)
+		}
+	}
+	return nil
+}
+
+func (msg *MsgCreateDomain) GetSigners() []sdk.AccAddress {
+	creator, err := sdk.AccAddressFromBech32(msg.Creator)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{creator}
+}
 
 // ---------- MsgUpdateDomain ----------
-
-func NewMsgUpdateDomain(creator string, id uint64, owner string, expiration uint64, ns string) *MsgUpdateDomain {
+func NewMsgUpdateDomain(creator string, id uint64, owner string, nsRecords []*NSRecordWithIP) *MsgUpdateDomain {
 	return &MsgUpdateDomain{
-		Id:         id,
-		Creator:    creator,
-		Owner:      owner,
-		Expiration: expiration,
-		Ns:         ns,
+		Creator:   creator,
+		Id:        id,
+		Owner:     owner,
+		NsRecords: nsRecords,
 	}
 }
 
-// ValidateBasic for MsgUpdateDomain (auto-generated in tx.pb.go)
-// We are relaxing ID check here if it were to be strict.
-// It is generally better to let the keeper handle "not found" for ID 0 if 0 is a valid ID.
-// If the generated ValidateBasic is too strict, this is where you'd override.
-// For now, assuming generated one is okay or ID 0 being invalid for update is acceptable.
-// func (msg *MsgUpdateDomain) ValidateBasic() error {
-// 	if _, err := sdk.AccAddressFromBech32(msg.Creator); err != nil {
-// 		return sdkerrors.ErrInvalidAddress.Wrapf("invalid creator address: %s", err)
-// 	}
-// 	// If ID 0 needs to be updatable, remove or adjust ID checks.
-// 	return nil
-// }
+func (msg *MsgUpdateDomain) ValidateBasic() error {
+	if _, err := sdk.AccAddressFromBech32(msg.Creator); err != nil {
+		return sdkerrors.ErrInvalidAddress.Wrapf("invalid creator address: %s", err)
+	}
+	if msg.Owner != "" {
+		if _, err := sdk.AccAddressFromBech32(msg.Owner); err != nil {
+			return sdkerrors.ErrInvalidAddress.Wrapf("invalid owner address: %s", err)
+		}
+	}
+	for i, nsEntry := range msg.NsRecords {
+		if nsEntry == nil {
+			return sdkerrors.ErrInvalidRequest.Wrapf("ns_records entry %d cannot be nil if provided", i)
+		}
+		if nsEntry.Name == "" {
+			return sdkerrors.ErrInvalidRequest.Wrapf("name in ns_records entry %d cannot be empty if provided", i)
+		}
+	}
+	if msg.Owner == "" && len(msg.NsRecords) == 0 {
+		return sdkerrors.ErrInvalidRequest.Wrap("either new owner or new ns_records must be provided for update")
+	}
+	return nil
+}
+
+func (msg *MsgUpdateDomain) GetSigners() []sdk.AccAddress {
+	creator, err := sdk.AccAddressFromBech32(msg.Creator)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{creator}
+}
 
 // ---------- MsgDeleteDomain ----------
-
 func NewMsgDeleteDomain(creator string, id uint64) *MsgDeleteDomain {
 	return &MsgDeleteDomain{
-		Id:      id,
 		Creator: creator,
+		Id:      id,
 	}
 }
 
-// ValidateBasic for MsgDeleteDomain (auto-generated in tx.pb.go)
-// Similar to Update, if ID 0 needs to be deletable, ensure validation allows it.
-// func (msg *MsgDeleteDomain) ValidateBasic() error {
-// 	if _, err := sdk.AccAddressFromBech32(msg.Creator); err != nil {
-// 		return sdkerrors.ErrInvalidAddress.Wrapf("invalid creator address: %s", err)
-// 	}
-// 	// If ID 0 needs to be deletable, remove or adjust ID checks.
-// 	return nil
-// }
+func (msg *MsgDeleteDomain) ValidateBasic() error {
+	if _, err := sdk.AccAddressFromBech32(msg.Creator); err != nil {
+		return sdkerrors.ErrInvalidAddress.Wrapf("invalid creator address: %s", err)
+	}
+	return nil
+}
+
+func (msg *MsgDeleteDomain) GetSigners() []sdk.AccAddress {
+	creator, err := sdk.AccAddressFromBech32(msg.Creator)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{creator}
+}
 
 // ---------- MsgTransferDomain ----------
-
 func NewMsgTransferDomain(creator string, id uint64, newOwner string) *MsgTransferDomain {
 	return &MsgTransferDomain{
 		Creator:  creator,
@@ -78,12 +121,14 @@ func NewMsgTransferDomain(creator string, id uint64, newOwner string) *MsgTransf
 	}
 }
 
-func (msg *MsgTransferDomain) Route() string {
-	return RouterKey
-}
-
-func (msg *MsgTransferDomain) Type() string {
-	return "TransferDomain"
+func (msg *MsgTransferDomain) ValidateBasic() error {
+	if _, err := sdk.AccAddressFromBech32(msg.Creator); err != nil {
+		return sdkerrors.ErrInvalidAddress.Wrapf("invalid creator address: %s", err)
+	}
+	if _, err := sdk.AccAddressFromBech32(msg.NewOwner); err != nil {
+		return sdkerrors.ErrInvalidAddress.Wrapf("invalid new owner address: %s", err)
+	}
+	return nil
 }
 
 func (msg *MsgTransferDomain) GetSigners() []sdk.AccAddress {
@@ -94,27 +139,7 @@ func (msg *MsgTransferDomain) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{creator}
 }
 
-func (msg *MsgTransferDomain) GetSignBytes() []byte {
-	bz := ModuleCdc.MustMarshalJSON(msg)
-	return sdk.MustSortJSON(bz)
-}
-
-func (msg *MsgTransferDomain) ValidateBasic() error {
-	if _, err := sdk.AccAddressFromBech32(msg.Creator); err != nil {
-		return sdkerrors.ErrInvalidAddress.Wrapf("invalid creator address: %s", err)
-	}
-	if _, err := sdk.AccAddressFromBech32(msg.NewOwner); err != nil {
-		return sdkerrors.ErrInvalidAddress.Wrapf("invalid new owner address: %s", err)
-	}
-	// ID 0 es un ID válido si la secuencia comienza en 0.
-	// La validación original `if msg.Id == 0` era demasiado estricta.
-	// Si quisiéramos que los IDs empiecen estrictamente en 1, cambiaríamos la lógica del keeper.
-	// Por ahora, permitimos ID 0.
-	return nil
-}
-
 // ---------- MsgHeartbeatDomain ----------
-
 func NewMsgHeartbeatDomain(creator string, id uint64) *MsgHeartbeatDomain {
 	return &MsgHeartbeatDomain{
 		Creator: creator,
@@ -122,12 +147,11 @@ func NewMsgHeartbeatDomain(creator string, id uint64) *MsgHeartbeatDomain {
 	}
 }
 
-func (msg *MsgHeartbeatDomain) Route() string {
-	return RouterKey
-}
-
-func (msg *MsgHeartbeatDomain) Type() string {
-	return "HeartbeatDomain"
+func (msg *MsgHeartbeatDomain) ValidateBasic() error {
+	if _, err := sdk.AccAddressFromBech32(msg.Creator); err != nil {
+		return sdkerrors.ErrInvalidAddress.Wrapf("invalid creator address: %s", err)
+	}
+	return nil
 }
 
 func (msg *MsgHeartbeatDomain) GetSigners() []sdk.AccAddress {
@@ -136,17 +160,4 @@ func (msg *MsgHeartbeatDomain) GetSigners() []sdk.AccAddress {
 		panic(err)
 	}
 	return []sdk.AccAddress{creator}
-}
-
-func (msg *MsgHeartbeatDomain) GetSignBytes() []byte {
-	bz := ModuleCdc.MustMarshalJSON(msg)
-	return sdk.MustSortJSON(bz)
-}
-
-func (msg *MsgHeartbeatDomain) ValidateBasic() error {
-	if _, err := sdk.AccAddressFromBech32(msg.Creator); err != nil {
-		return sdkerrors.ErrInvalidAddress.Wrapf("invalid creator address: %s", err)
-	}
-	// ID 0 es un ID válido si la secuencia comienza en 0.
-	return nil
 }

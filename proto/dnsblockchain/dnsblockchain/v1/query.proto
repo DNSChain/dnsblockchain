@@ -18,7 +18,7 @@ service Query {
     option (google.api.http).get = "/dnsblockchain/dnsblockchain/v1/params";
   }
 
-  // ListDomain Queries a list of Domain items.
+  // GetDomain Queries a domain by its ID.
   rpc GetDomain(QueryGetDomainRequest) returns (QueryGetDomainResponse) {
     option (google.api.http).get = "/dnsblockchain/dnsblockchain/v1/domain/{id}";
   }
@@ -29,8 +29,13 @@ service Query {
   }
 
   // ListPermittedTLDs queries all permitted TLDs.
-  rpc ListPermittedTLDs(QueryListPermittedTLDsRequest) returns (QueryListPermittedTLDsResponse) { // <-- NUEVO RPC
+  rpc ListPermittedTLDs(QueryListPermittedTLDsRequest) returns (QueryListPermittedTLDsResponse) {
     option (google.api.http).get = "/dnsblockchain/dnsblockchain/v1/permitted_tlds";
+  }
+
+  // GetDomainByName queries a domain by its FQDN.
+  rpc GetDomainByName(QueryGetDomainByNameRequest) returns (QueryGetDomainByNameResponse) {
+    option (google.api.http).get = "/dnsblockchain/dnsblockchain/v1/domain_by_name/{name}";
   }
 }
 
@@ -39,7 +44,6 @@ message QueryParamsRequest {}
 
 // QueryParamsResponse is response type for the Query/Params RPC method.
 message QueryParamsResponse {
-  // params holds all the parameters of this module.
   Params params = 1 [
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
@@ -68,9 +72,21 @@ message QueryAllDomainResponse {
 }
 
 // QueryListPermittedTLDsRequest is request type for the Query/ListPermittedTLDs RPC method.
-message QueryListPermittedTLDsRequest {} // <-- NUEVO MENSAJE
+message QueryListPermittedTLDsRequest {}
 
 // QueryListPermittedTLDsResponse is response type for the Query/ListPermittedTLDs RPC method.
-message QueryListPermittedTLDsResponse { // <-- NUEVO MENSAJE
+message QueryListPermittedTLDsResponse {
   repeated string tlds = 1;
+}
+
+// QueryGetDomainByNameRequest defines the request for querying a domain by name.
+message QueryGetDomainByNameRequest {
+  string name = 1; // FQDN, e.g., "example.dweb"
+}
+
+// QueryGetDomainByNameResponse defines the response for querying a domain by name.
+message QueryGetDomainByNameResponse {
+  Domain domain = 1 [(gogoproto.nullable) = false];
+  bool found = 2;    // Indica si el dominio fue encontrado
+  bool expired = 3;  // Indica si el dominio encontrado está expirado
 }

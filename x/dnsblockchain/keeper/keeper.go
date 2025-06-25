@@ -13,7 +13,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	// Para errores estándar
 	"dnsblockchain/x/dnsblockchain/types"
 )
 
@@ -28,7 +27,8 @@ type Keeper struct {
 	Schema        collections.Schema
 	Params        collections.Item[types.Params]
 	DomainSeq     collections.Sequence
-	Domain        collections.Map[uint64, types.Domain]
+	Domain        collections.Map[uint64, types.Domain] // Maps ID -> Domain
+	DomainName    collections.Map[string, uint64]       // NUEVO ÍNDICE: Maps FQDN -> Domain ID
 	PermittedTLDs collections.KeySet[string]
 }
 
@@ -37,7 +37,6 @@ func NewKeeper(
 	cdc codec.Codec,
 	addressCodec address.Codec,
 	authority []byte,
-
 ) Keeper {
 	if _, err := addressCodec.BytesToString(authority); err != nil {
 		panic(fmt.Sprintf("invalid authority address %s: %s", authority, err))
@@ -52,8 +51,9 @@ func NewKeeper(
 		authority:    authority,
 
 		Params:        collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
-		Domain:        collections.NewMap(sb, types.DomainKey, "domain", collections.Uint64Key, codec.CollValue[types.Domain](cdc)),
-		DomainSeq:     collections.NewSequence(sb, types.DomainCountKey, "domainSequence"),
+		Domain:        collections.NewMap(sb, types.DomainKey, "domain_by_id", collections.Uint64Key, codec.CollValue[types.Domain](cdc)),
+		DomainName:    collections.NewMap(sb, types.DomainNameKey, "domain_by_name", collections.StringKey, collections.Uint64Value), // NUEVO ÍNDICE
+		DomainSeq:     collections.NewSequence(sb, types.DomainCountKey, "domain_sequence"),
 		PermittedTLDs: collections.NewKeySet(sb, types.PermittedTLDsKey, "permitted_tlds", collections.StringKey),
 	}
 	schema, err := sb.Build()
@@ -76,7 +76,7 @@ func (k Keeper) AddPermittedTLD(ctx context.Context, tld string) error {
 	normalizedTLD := strings.ToLower(strings.TrimSpace(tld)) // Normalizar
 
 	// Check against hardcoded ICANN reserved list first
-	isGloballyReserved, _ := k.IsTLDGloballyReserved(sdkCtx, normalizedTLD) // Error from IsTLDGloballyReserved can be ignored as types.IsReservedTLD currently doesn't return one.
+	isGloballyReserved, _ := k.IsTLDGloballyReserved(sdkCtx, normalizedTLD)
 	if isGloballyReserved {
 		k.Logger(sdkCtx).Error("Attempt to add globally reserved TLD directly to permitted list", "tld", normalizedTLD)
 		return errorsmod.Wrapf(types.ErrTLDReservedByICANN, "TLD '%s' is globally reserved and cannot be added to permitted TLDs", normalizedTLD)
@@ -85,14 +85,12 @@ func (k Keeper) AddPermittedTLD(ctx context.Context, tld string) error {
 	if normalizedTLD == "" {
 		return errorsmod.Wrap(types.ErrInvalidTLD, "TLD cannot be empty")
 	}
-	// Validación simple de formato (puedes hacerla más robusta)
 	if strings.Contains(normalizedTLD, ".") {
 		return errorsmod.Wrapf(types.ErrInvalidTLD, "TLD '%s' cannot contain dots", normalizedTLD)
 	}
-	if len(normalizedTLD) > 63 || len(normalizedTLD) < 2 { // Límites comunes para TLDs
+	if len(normalizedTLD) > 63 || len(normalizedTLD) < 2 {
 		return errorsmod.Wrapf(types.ErrInvalidTLD, "TLD '%s' length must be between 2 and 63 characters", normalizedTLD)
 	}
-	// Podrías añadir validación de caracteres aquí (e.g., solo alfanuméricos y guiones no al inicio/fin)
 
 	has, err := k.PermittedTLDs.Has(sdkCtx, normalizedTLD)
 	if err != nil {
@@ -108,7 +106,6 @@ func (k Keeper) AddPermittedTLD(ctx context.Context, tld string) error {
 
 // IsTLDGloballyReserved checks if a TLD is in the hardcoded ICANN deny list.
 func (k Keeper) IsTLDGloballyReserved(ctx context.Context, tld string) (bool, error) {
-	// The list is in types, so the keeper calls the types package function.
 	return types.IsReservedTLD(tld), nil
 }
 
@@ -116,7 +113,7 @@ func (k Keeper) IsTLDGloballyReserved(ctx context.Context, tld string) (bool, er
 func (k Keeper) IsTLDPermitted(ctx context.Context, tld string) (bool, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	normalizedTLD := strings.ToLower(strings.TrimSpace(tld))
-	if normalizedTLD == "" { // Un TLD vacío no debería considerarse permitido ni causar error de store
+	if normalizedTLD == "" {
 		return false, nil
 	}
 	return k.PermittedTLDs.Has(sdkCtx, normalizedTLD)

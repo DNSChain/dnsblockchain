@@ -7,6 +7,7 @@ import "cosmos/msg/v1/msg.proto";
 import "cosmos_proto/cosmos.proto";
 import "dnsblockchain/dnsblockchain/v1/params.proto";
 import "gogoproto/gogo.proto";
+import "dnsblockchain/dnsblockchain/v1/domain.proto";
 
 option go_package = "dnsblockchain/x/dnsblockchain/types";
 
@@ -60,9 +61,10 @@ message MsgCreateDomain {
   option (cosmos.msg.v1.signer) = "creator";
   string creator = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   string name = 2;
-  string owner = 3;
-  uint64 expiration = 4;
-  string ns = 5;
+  string owner = 3 [(cosmos_proto.scalar) = "cosmos.AddressString"]; // Especificar AddressString
+  // string ns = 5; // Reemplazado o complementado por ns_records
+  repeated NSRecordWithIP ns_records = 5; // NUEVO
+  // expiration se establece por el keeper, no en el mensaje
 }
 
 // MsgCreateDomainResponse defines the MsgCreateDomainResponse message.
@@ -75,9 +77,10 @@ message MsgUpdateDomain {
   option (cosmos.msg.v1.signer) = "creator";
   string creator = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   uint64 id = 2;
-  string owner = 3; // Ahora es el campo 3
-  uint64 expiration = 4; // Ahora es el campo 4
-  string ns = 5; // Ahora es el campo 5
+  string owner = 3 [(cosmos_proto.scalar) = "cosmos.AddressString"]; // Opcional, solo el creator puede cambiar
+  // string ns = 5; // Reemplazado o complementado por ns_records
+  repeated NSRecordWithIP ns_records = 4; // NUEVO (el número de campo puede necesitar ajuste)
+  // Expiration se maneja por HeartbeatDomain
 }
 
 // MsgUpdateDomainResponse defines the MsgUpdateDomainResponse message.

@@ -55,11 +55,20 @@ We are looking for passionate contributors interested in decentralization, DNS, 
 To start developing or testing DNS Chain locally:
 
 # Clone the repository (replace with your URL)
-git clone https://github.com/YOUR_USERNAME/dnsblockchain.git
+git clone https://github.com/DNSChain/dnsblockchain.git
 cd dnsblockchain
 
-# Install dependencies, build, initialize, and start the development chain
-ignite chain serve --reset-once
+# Install dependencies
+'''go mod tidy'''
+
+# Install Ignite
+Follow instructions in [https://ignite.com/]
+
+# Build
+'''ignite chain build'''
+
+# Initialize and start the development chain
+'''ignite chain serve --reset-once'''
 
 The serve command will provide you with:
 - Test account addresses (Alice, Bob) and their mnemonics.

@@ -1,14 +1,14 @@
+// dnsblockchain/x/dnsblockchain/types/codec.go
 package types
 
 import (
-	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/msgservice"
 )
 
 var (
-	ModuleCdc = codec.NewProtoCodec(nil)
+// ModuleCdc = codec.NewProtoCodec(codectypes.NewInterfaceRegistry()) // Comentado o eliminado si no se usa
 )
 
 func RegisterInterfaces(registrar codectypes.InterfaceRegistry) {
@@ -16,6 +16,8 @@ func RegisterInterfaces(registrar codectypes.InterfaceRegistry) {
 		&MsgCreateDomain{},
 		&MsgUpdateDomain{},
 		&MsgDeleteDomain{},
+		&MsgTransferDomain{},  // Añadido si no estaba
+		&MsgHeartbeatDomain{}, // Añadido si no estaba
 	)
 
 	registrar.RegisterImplementations((*sdk.Msg)(nil),

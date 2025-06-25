@@ -29,40 +29,70 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					Alias:          []string{"show-domain"},
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{{ProtoField: "id"}},
 				},
-				{ // <-- NUEVA ENTRADA
+				{
 					RpcMethod: "ListPermittedTLDs",
 					Use:       "list-permitted-tlds",
 					Short:     "List all permitted TLDs",
+				},
+				{
+					RpcMethod:      "GetDomainByName",
+					Use:            "get-domain-by-name [name]",
+					Short:          "Gets a domain by its FQDN (e.g., example.dweb)",
+					Alias:          []string{"show-domain-by-name"},
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{{ProtoField: "name"}},
 				},
 				// this line is used by ignite scaffolding # autocli/query
 			},
 		},
 		Tx: &autocliv1.ServiceCommandDescriptor{
 			Service:              types.Msg_serviceDesc.ServiceName,
-			EnhanceCustomCommand: true, // only required if you want to use the custom command
+			EnhanceCustomCommand: true,
 			RpcCommandOptions: []*autocliv1.RpcCommandOptions{
 				{
 					RpcMethod: "UpdateParams",
-					Skip:      true, // skipped because authority gated
+					Skip:      true,
 				},
 				{
 					RpcMethod: "CreateDomain",
-					Use:       "create-domain [name] [owner] [ns]", // name, owner, ns como posicionales
-					Short:     "Create domain",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{ // Expiration es manejado por el keeper
+					Use:       "create-domain [name] [owner] --ns-records-json <json_string_or_path>", // Cambiado
+					Short:     "Create a new domain. NS records must be provided as a JSON string or path to a JSON file via the --ns-records-json flag.",
+					Long: `Create a new domain.
+Example:
+dnsblockchaind tx dnsblockchain create-domain example.web3 cosmos1... --ns-records-json '[{"name":"ns1.example.web3","ipv4_addresses":["1.2.3.4"]},{"name":"ns2.example.web3","ipv4_addresses":["5.6.7.8"]}]' --from mykey
+
+Or using a file:
+dnsblockchaind tx dnsblockchain create-domain example.web3 cosmos1... --ns-records-json path/to/ns_records.json --from mykey
+
+ns_records.json content:
+[
+  {"name":"ns1.example.web3","ipv4_addresses":["1.2.3.4"],"ipv6_addresses":["2001:db8::1"]},
+  {"name":"ns2.example.web3","ipv4_addresses":["5.6.7.8"]}
+]
+`,
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "name"},
 						{ProtoField: "owner"},
-						{ProtoField: "ns"},
+						// No hay argumento posicional para ns_records; se usará un flag.
 					},
+					// Flags para campos que no son posicionales o son complejos
+					// Autocli debería generar un flag para --ns-records si el campo existe en el mensaje.
+					// Pero como es `repeated`, la entrada directa por flag es compleja.
+					// A menudo, para `repeated` mensajes, se usa un flag que toma un JSON string.
+					// Si autocli no genera un flag útil para NsRecords, se podría necesitar un comando CLI personalizado.
+					// Por ahora, vamos a ver si autocli genera un flag --ns-records y cómo se comporta.
+					// Si no, tendríamos que hacer el flag --ns-records-json manualmente o un comando wrapper.
 				},
 				{
 					RpcMethod: "UpdateDomain",
-					Use:       "update-domain [id] [owner] [ns]", // Expiration ya no se pide si no se puede cambiar
-					Short:     "Update domain owner (creator only) or NS (creator or owner)",
+					Use:       "update-domain [id] --owner [new-owner] --ns-records-json <json_string_or_path>", // Cambiado
+					Short:     "Update domain owner (creator only) or NS records (creator or owner).",
+					Long: `Update an existing domain.
+Provide the domain ID. Optionally provide a new owner (if you are the creator)
+and/or new NS records as a JSON string or path to a file via --ns-records-json.
+`,
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "id"},
-						{ProtoField: "owner"}, // Opcional si el caller no es creator
-						{ProtoField: "ns"},
+						// Owner y ns_records se manejarán con flags o JSON.
 					},
 				},
 				{

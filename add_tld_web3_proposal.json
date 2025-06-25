@@ -1,0 +1,11 @@
+{
+  "content": {
+    "@type": "/dnsblockchain.dao.v1.AddTldProposalContent",
+    "tld": "web3",
+    "description": "Propuesta para añadir el TLD .web3 a la lista de TLDs permitidos."
+  },
+  "title": "Añadir TLD .web3",
+  "description": "Esta propuesta busca añadir el dominio de nivel superior .web3 a la lista de TLDs permitidos en la plataforma DNSChain.",
+  "proposer": "cosmos1d6u9txzm4xudxc8xvjgak4ghvkydcasj6jy26m",
+  "initial_deposit": []
+}

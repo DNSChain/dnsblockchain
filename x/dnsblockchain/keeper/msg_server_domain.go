@@ -4,7 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strings" // Necesario para strings.Split y strings.Trim
+	"net" // <--- AÑADIR ESTA IMPORTACIÓN
+	"strings"
 
 	"dnsblockchain/x/dnsblockchain/types"
 
@@ -16,31 +17,23 @@ import (
 
 func (k msgServer) CreateDomain(ctx context.Context, msg *types.MsgCreateDomain) (*types.MsgCreateDomainResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	var err error // Declarar err una vez al principio
+	var err error
 
-	// Validar dirección creator
-	if _, err = k.addressCodec.StringToBytes(msg.Creator); err != nil { // Reasignar a err
+	if _, err = k.addressCodec.StringToBytes(msg.Creator); err != nil {
 		return nil, errorsmod.Wrap(sdkerrors.ErrInvalidAddress, fmt.Sprintf("invalid creator address: %s", err))
 	}
-
-	// Validar dirección owner
-	if _, err = k.addressCodec.StringToBytes(msg.Owner); err != nil { // Reasignar a err
+	if _, err = k.addressCodec.StringToBytes(msg.Owner); err != nil {
 		return nil, errorsmod.Wrap(sdkerrors.ErrInvalidAddress, fmt.Sprintf("invalid owner address: %s", err))
 	}
 
-	// Validate domain name structure: must be label.TLD
-	// msg.Name should not contain subdomains at the blockchain registration level.
-	// Subdomains are managed off-chain by the domain owner using their registered NS.
-	normalizedName := strings.Trim(msg.Name, ".")
+	normalizedName := strings.ToLower(strings.Trim(msg.Name, "."))
 	parts := strings.Split(normalizedName, ".")
 	if len(parts) != 2 {
-		return nil, errorsmod.Wrapf(types.ErrInvalidDomainName, "domain name '%s' must be in 'label.tld' format; subdomains are not registered directly on-chain", msg.Name)
+		return nil, errorsmod.Wrapf(types.ErrInvalidDomainName, "domain name '%s' must be in 'label.tld' format", msg.Name)
 	}
-	// label := parts[0] // El label es la primera parte
-	extractedTLDFromMsgName := parts[1] // El TLD es la segunda parte
+	extractedTLDFromMsgName := parts[1]
 
-	// Ahora, usamos el TLD extraído para la verificación
-	if extractedTLDFromMsgName == "" { // Aunque la validación de len(parts) != 2 debería cubrir esto
+	if extractedTLDFromMsgName == "" {
 		return nil, errorsmod.Wrapf(types.ErrInvalidDomainName, "TLD could not be extracted from domain name '%s'", msg.Name)
 	}
 
@@ -52,19 +45,34 @@ func (k msgServer) CreateDomain(ctx context.Context, msg *types.MsgCreateDomain)
 		return nil, errorsmod.Wrapf(types.ErrTLDNotPermitted, "TLD '%s' from domain name '%s' is not permitted", extractedTLDFromMsgName, msg.Name)
 	}
 
-	// Verificar si ya existe un dominio con el mismo nombre (msg.Name ya está normalizado en la práctica por el Trim anterior)
-	walkErr := k.Domain.Walk(sdkCtx, nil, func(key uint64, value types.Domain) (bool, error) {
-		if value.Name == normalizedName { // Comparar con normalizedName
-			return true, types.ErrDuplicateDomainName
-		}
-		return false, nil
-	})
+	_, err = k.DomainName.Get(sdkCtx, normalizedName)
+	if err == nil {
+		return nil, errorsmod.Wrapf(types.ErrDuplicateDomainName, "domain name '%s' already exists", normalizedName)
+	}
+	if !errors.Is(err, collections.ErrNotFound) {
+		return nil, errorsmod.Wrap(err, "failed to check for duplicate domain name in index")
+	}
 
-	if walkErr != nil {
-		if errors.Is(walkErr, types.ErrDuplicateDomainName) {
-			return nil, walkErr
+	if len(msg.NsRecords) == 0 {
+		return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "at least one NS record (ns_records entry) must be provided")
+	}
+	for i, nsEntry := range msg.NsRecords {
+		if nsEntry == nil {
+			return nil, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "ns_records entry %d cannot be nil", i)
 		}
-		return nil, errorsmod.Wrap(walkErr, "failed to check for duplicate domain name")
+		if strings.TrimSpace(nsEntry.Name) == "" {
+			return nil, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "name in ns_records entry %d cannot be empty", i)
+		}
+		for _, ipStr := range nsEntry.Ipv4Addresses {
+			if net.ParseIP(ipStr) == nil { // <--- CAMBIO AQUÍ
+				return nil, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "invalid IPv4 address '%s' in ns_records entry %d", ipStr, i)
+			}
+		}
+		for _, ipStr := range nsEntry.Ipv6Addresses {
+			if net.ParseIP(ipStr) == nil { // <--- CAMBIO AQUÍ
+				return nil, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "invalid IPv6 address '%s' in ns_records entry %d", ipStr, i)
+			}
+		}
 	}
 
 	nextID, err := k.DomainSeq.Next(sdkCtx)
@@ -75,14 +83,19 @@ func (k msgServer) CreateDomain(ctx context.Context, msg *types.MsgCreateDomain)
 	domain := types.Domain{
 		Id:         nextID,
 		Creator:    msg.Creator,
-		Name:       normalizedName, // Guardar el nombre normalizado
-		Owner:      msg.Owner,      // Usar el msg.Owner proporcionado
-		Ns:         msg.Ns,
+		Name:       normalizedName,
+		Owner:      msg.Owner,
+		NsRecords:  msg.NsRecords,
 		Expiration: uint64(sdkCtx.BlockTime().AddDate(1, 0, 0).Unix()),
 	}
 
 	if err = k.Domain.Set(sdkCtx, nextID, domain); err != nil {
-		return nil, errorsmod.Wrap(sdkerrors.ErrLogic, "failed to set domain")
+		return nil, errorsmod.Wrap(sdkerrors.ErrLogic, "failed to set domain by id")
+	}
+
+	if err = k.DomainName.Set(sdkCtx, domain.Name, domain.Id); err != nil {
+		_ = k.Domain.Remove(sdkCtx, domain.Id)
+		return nil, errorsmod.Wrap(sdkerrors.ErrLogic, "failed to set domain name index")
 	}
 
 	return &types.MsgCreateDomainResponse{
@@ -92,25 +105,22 @@ func (k msgServer) CreateDomain(ctx context.Context, msg *types.MsgCreateDomain)
 
 func (k msgServer) UpdateDomain(ctx context.Context, msg *types.MsgUpdateDomain) (*types.MsgUpdateDomainResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	var err error // Declarar err una vez
+	var err error
 
-	// Validar dirección del firmante (msg.Creator)
-	if _, err = k.addressCodec.StringToBytes(msg.Creator); err != nil { // Reasignar
+	if _, err = k.addressCodec.StringToBytes(msg.Creator); err != nil {
 		return nil, errorsmod.Wrap(sdkerrors.ErrInvalidAddress, fmt.Sprintf("invalid signer address: %s", err))
 	}
 
-	// Verificar que el dominio existe
-	val, err := k.Domain.Get(sdkCtx, msg.Id) // err es una nueva variable en este scope, está bien
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
+	val, errGet := k.Domain.Get(sdkCtx, msg.Id)
+	if errGet != nil {
+		if errors.Is(errGet, collections.ErrNotFound) {
 			return nil, errorsmod.Wrap(sdkerrors.ErrKeyNotFound, fmt.Sprintf("key %d doesn't exist", msg.Id))
 		}
 		return nil, errorsmod.Wrap(sdkerrors.ErrLogic, "failed to get domain")
 	}
 
-	// Determinar los campos a actualizar y verificar permisos
-	newOwner := val.Owner // Por defecto, el owner no cambia
-	newNs := val.Ns       // Por defecto, los NS no cambian
+	newOwner := val.Owner
+	newNsRecords := val.NsRecords
 
 	isCreator := msg.Creator == val.Creator
 	isOwner := msg.Creator == val.Owner
@@ -119,44 +129,79 @@ func (k msgServer) UpdateDomain(ctx context.Context, msg *types.MsgUpdateDomain)
 		return nil, errorsmod.Wrapf(sdkerrors.ErrUnauthorized, "signer %s is neither the creator nor the owner of domain %d", msg.Creator, msg.Id)
 	}
 
-	// Si el firmante es el creator
+	changed := false
 	if isCreator {
-		// El creator puede cambiar el owner (si se proporciona en el mensaje y es diferente)
 		if msg.Owner != "" && msg.Owner != val.Owner {
-			if _, err = k.addressCodec.StringToBytes(msg.Owner); err != nil { // Reasignar
+			if _, err = k.addressCodec.StringToBytes(msg.Owner); err != nil {
 				return nil, errorsmod.Wrap(sdkerrors.ErrInvalidAddress, fmt.Sprintf("invalid new owner address in message: %s", err))
 			}
 			newOwner = msg.Owner
+			changed = true
 		}
-		// El creator puede cambiar los NS (si se proporcionan en el mensaje y son diferentes)
-		if msg.Ns != "" && msg.Ns != val.Ns {
-			newNs = msg.Ns
+		if len(msg.NsRecords) > 0 {
+			for i, nsEntry := range msg.NsRecords {
+				if nsEntry == nil {
+					return nil, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "ns_records entry %d cannot be nil", i)
+				}
+				if strings.TrimSpace(nsEntry.Name) == "" {
+					return nil, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "name in ns_records entry %d cannot be empty", i)
+				}
+				for _, ipStr := range nsEntry.Ipv4Addresses {
+					if net.ParseIP(ipStr) == nil { // <--- CAMBIO AQUÍ
+						return nil, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "invalid IPv4 address '%s'", ipStr)
+					}
+				}
+				for _, ipStr := range nsEntry.Ipv6Addresses {
+					if net.ParseIP(ipStr) == nil { // <--- CAMBIO AQUÍ
+						return nil, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "invalid IPv6 address '%s'", ipStr)
+					}
+				}
+			}
+			newNsRecords = msg.NsRecords
+			changed = true
 		}
-	} else if isOwner { // Si el firmante es solo el owner (y no el creator)
-		// El owner solo puede cambiar los NS
-		if msg.Ns != "" && msg.Ns != val.Ns {
-			newNs = msg.Ns
+	} else if isOwner {
+		if len(msg.NsRecords) > 0 {
+			for i, nsEntry := range msg.NsRecords {
+				if nsEntry == nil {
+					return nil, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "ns_records entry %d cannot be nil", i)
+				}
+				if strings.TrimSpace(nsEntry.Name) == "" {
+					return nil, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "name in ns_records entry %d cannot be empty", i)
+				}
+				for _, ipStr := range nsEntry.Ipv4Addresses {
+					if net.ParseIP(ipStr) == nil { // <--- CAMBIO AQUÍ
+						return nil, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "invalid IPv4 address '%s'", ipStr)
+					}
+				}
+				for _, ipStr := range nsEntry.Ipv6Addresses {
+					if net.ParseIP(ipStr) == nil { // <--- CAMBIO AQUÍ
+						return nil, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "invalid IPv6 address '%s'", ipStr)
+					}
+				}
+			}
+			newNsRecords = msg.NsRecords
+			changed = true
 		}
-		// Si el owner intenta cambiar el owner, es un error (a menos que también sea el creator, cubierto arriba)
 		if msg.Owner != "" && msg.Owner != val.Owner {
 			return nil, errorsmod.Wrapf(sdkerrors.ErrUnauthorized, "owner %s cannot change domain ownership; only creator %s can", msg.Creator, val.Creator)
 		}
 	}
 
-	// Construir el dominio actualizado
-	// El Nombre y el Creator original NUNCA cambian en UpdateDomain.
-	// La Expiración tampoco cambia aquí.
+	if !changed && msg.Owner == "" && len(msg.NsRecords) == 0 {
+		return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "no fields to update were provided or new values are same as existing")
+	}
+
 	domain := types.Domain{
 		Id:         msg.Id,
-		Creator:    val.Creator, // Creator original no cambia
-		Name:       val.Name,    // Nombre no cambia
-		Owner:      newOwner,    // Owner actualizado según la lógica de permisos
-		Ns:         newNs,       // NS actualizados según la lógica de permisos
+		Creator:    val.Creator,
+		Name:       val.Name,
+		Owner:      newOwner,
+		NsRecords:  newNsRecords,
 		Expiration: val.Expiration,
 	}
 
-	// Guardar cambios
-	if err = k.Domain.Set(sdkCtx, msg.Id, domain); err != nil { // Reasignar
+	if err = k.Domain.Set(sdkCtx, msg.Id, domain); err != nil {
 		return nil, errorsmod.Wrap(sdkerrors.ErrLogic, "failed to update domain")
 	}
 
@@ -165,65 +210,61 @@ func (k msgServer) UpdateDomain(ctx context.Context, msg *types.MsgUpdateDomain)
 
 func (k msgServer) DeleteDomain(ctx context.Context, msg *types.MsgDeleteDomain) (*types.MsgDeleteDomainResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	var err error // Declarar err una vez
+	var err error
 
-	// Validar dirección creator
-	if _, err = k.addressCodec.StringToBytes(msg.Creator); err != nil { // Reasignar
+	if _, err = k.addressCodec.StringToBytes(msg.Creator); err != nil {
 		return nil, errorsmod.Wrap(sdkerrors.ErrInvalidAddress, fmt.Sprintf("invalid address: %s", err))
 	}
 
-	// Verificar que el dominio existe
-	val, errGet := k.Domain.Get(sdkCtx, msg.Id) // Usar nueva variable errGet para evitar shadowing
+	val, errGet := k.Domain.Get(sdkCtx, msg.Id)
 	if errGet != nil {
 		if errors.Is(errGet, collections.ErrNotFound) {
 			return nil, errorsmod.Wrap(sdkerrors.ErrKeyNotFound, fmt.Sprintf("key %d doesn't exist", msg.Id))
 		}
-		return nil, errorsmod.Wrap(sdkerrors.ErrLogic, "failed to get domain")
+		return nil, errorsmod.Wrap(sdkerrors.ErrLogic, "failed to get domain for deletion")
 	}
 
-	// Solo el creator original puede borrar el dominio
 	if msg.Creator != val.Creator {
 		return nil, errorsmod.Wrapf(sdkerrors.ErrUnauthorized, "signer %s is not the creator %s of the domain", msg.Creator, val.Creator)
 	}
 
-	// Eliminar dominio
-	if err = k.Domain.Remove(sdkCtx, msg.Id); err != nil { // Reasignar
-		return nil, errorsmod.Wrap(sdkerrors.ErrLogic, "failed to delete domain")
+	domainNameToRemoveFromIndex := val.Name
+
+	if err = k.DomainName.Remove(sdkCtx, domainNameToRemoveFromIndex); err != nil {
+		k.Logger(sdkCtx).Error("failed to remove domain name from index during delete, but proceeding", "name", domainNameToRemoveFromIndex, "id", msg.Id, "error", err)
+	}
+
+	if err = k.Domain.Remove(sdkCtx, msg.Id); err != nil {
+		return nil, errorsmod.Wrap(sdkerrors.ErrLogic, "failed to delete domain by id")
 	}
 
 	return &types.MsgDeleteDomainResponse{}, nil
 }
 
-// HeartbeatDomain extiende la expiración del dominio 1 año más desde el bloque actual
 func (k msgServer) HeartbeatDomain(ctx context.Context, msg *types.MsgHeartbeatDomain) (*types.MsgHeartbeatDomainResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	var err error // Declarar err una vez
+	var err error
 
-	// Validar dirección del firmante (msg.Creator)
-	if _, err = k.addressCodec.StringToBytes(msg.Creator); err != nil { // Reasignar
+	if _, err = k.addressCodec.StringToBytes(msg.Creator); err != nil {
 		return nil, errorsmod.Wrap(sdkerrors.ErrInvalidAddress, fmt.Sprintf("invalid address: %s", err))
 	}
 
-	// Obtener dominio
-	domain, errGet := k.Domain.Get(sdkCtx, msg.Id) // Usar nueva variable errGet
+	domain, errGet := k.Domain.Get(sdkCtx, msg.Id)
 	if errGet != nil {
 		if errors.Is(errGet, collections.ErrNotFound) {
 			return nil, errorsmod.Wrap(sdkerrors.ErrKeyNotFound, fmt.Sprintf("domain id %d not found", msg.Id))
 		}
-		return nil, errorsmod.Wrap(sdkerrors.ErrLogic, "failed to get domain")
+		return nil, errorsmod.Wrap(sdkerrors.ErrLogic, "failed to get domain for heartbeat")
 	}
 
-	// Verificar que quien firma es el creator original o el owner actual
 	if msg.Creator != domain.Creator && msg.Creator != domain.Owner {
-		return nil, errorsmod.Wrapf(sdkerrors.ErrUnauthorized, "signer %s is neither the creator (%s) nor the owner (%s) of the domain; only creator or owner can send heartbeat", msg.Creator, domain.Creator, domain.Owner)
+		return nil, errorsmod.Wrapf(sdkerrors.ErrUnauthorized, "signer %s is neither the creator (%s) nor the owner (%s)", msg.Creator, domain.Creator, domain.Owner)
 	}
 
-	// Extender expiración a 1 año desde ahora
 	domain.Expiration = uint64(sdkCtx.BlockTime().AddDate(1, 0, 0).Unix())
 
-	// Guardar dominio actualizado
-	if err = k.Domain.Set(sdkCtx, msg.Id, domain); err != nil { // Reasignar
-		return nil, errorsmod.Wrap(sdkerrors.ErrLogic, "failed to update domain expiration")
+	if err = k.Domain.Set(sdkCtx, msg.Id, domain); err != nil {
+		return nil, errorsmod.Wrap(sdkerrors.ErrLogic, "failed to update domain expiration for heartbeat")
 	}
 
 	return &types.MsgHeartbeatDomainResponse{}, nil
@@ -231,36 +272,31 @@ func (k msgServer) HeartbeatDomain(ctx context.Context, msg *types.MsgHeartbeatD
 
 func (k msgServer) TransferDomain(goCtx context.Context, msg *types.MsgTransferDomain) (*types.MsgTransferDomainResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	var err error // Declarar err una vez
+	var err error
 
-	// Validar dirección del firmante (msg.Creator)
-	if _, err = k.addressCodec.StringToBytes(msg.Creator); err != nil { // Reasignar
+	if _, err = k.addressCodec.StringToBytes(msg.Creator); err != nil {
 		return nil, errorsmod.Wrap(sdkerrors.ErrInvalidAddress, fmt.Sprintf("invalid creator address: %s", err))
 	}
-	// Validar nueva dirección de owner
-	if _, err = k.addressCodec.StringToBytes(msg.NewOwner); err != nil { // Reasignar
+	if _, err = k.addressCodec.StringToBytes(msg.NewOwner); err != nil {
 		return nil, errorsmod.Wrap(sdkerrors.ErrInvalidAddress, fmt.Sprintf("invalid new owner address: %s", err))
 	}
 
-	domain, errGet := k.Domain.Get(ctx, msg.Id) // Usar nueva variable errGet
+	domain, errGet := k.Domain.Get(ctx, msg.Id)
 	if errGet != nil {
-		// Devuelve un error más específico si no se encuentra
 		if errors.Is(errGet, collections.ErrNotFound) {
 			return nil, errorsmod.Wrapf(sdkerrors.ErrKeyNotFound, "domain with id %d not found", msg.Id)
 		}
-		return nil, errorsmod.Wrap(sdkerrors.ErrLogic, "failed to get domain")
+		return nil, errorsmod.Wrap(sdkerrors.ErrLogic, "failed to get domain for transfer")
 	}
 
-	// Solo el creator original (que también podría ser el owner) puede transferir la "autoría" (el campo creator)
 	if domain.Creator != msg.Creator {
-		return nil, errorsmod.Wrapf(sdkerrors.ErrUnauthorized, "signer %s is not the creator %s; only the original creator can fully transfer the domain (creator and owner fields)", msg.Creator, domain.Creator)
+		return nil, errorsmod.Wrapf(sdkerrors.ErrUnauthorized, "signer %s is not the creator %s; only the original creator can transfer the domain", msg.Creator, domain.Creator)
 	}
 
-	// El nuevo propietario también se convierte en el nuevo creador
 	domain.Creator = msg.NewOwner
 	domain.Owner = msg.NewOwner
 
-	if err = k.Domain.Set(ctx, msg.Id, domain); err != nil { // Reasignar
+	if err = k.Domain.Set(ctx, msg.Id, domain); err != nil {
 		return nil, errorsmod.Wrap(sdkerrors.ErrLogic, "failed to transfer domain ownership and creatorship")
 	}
 

@@ -3,12 +3,20 @@ package dnsblockchain.dnsblockchain.v1;
 
 option go_package = "dnsblockchain/x/dnsblockchain/types";
 
+// NSRecordWithIP define un servidor de nombres con su(s) IP(s) opcional(es).
+message NSRecordWithIP {
+  string name = 1;       // Ej: "ns1.domaincontrol.web3."
+  repeated string ipv4_addresses = 2; // Ej: ["45.55.172.134"]
+  repeated string ipv6_addresses = 3; // Opcional para IPv6
+}
+
 // Domain defines the Domain message.
 message Domain {
   uint64 id = 1;
-  string name = 2;
-  string owner = 3;
-  string ns = 4;
-  string creator = 5;
-  uint64 expiration = 6;
+  string name = 2;       // FQDN del dominio, ej: "domaincontrol.web3"
+  string owner = 3;      // Dirección del propietario
+  // string ns = 4; // Este campo se reemplazaría o se usaría como fallback si ns_records está vacío
+  repeated NSRecordWithIP ns_records = 7; // NUEVO CAMPO
+  string creator = 5;    // Dirección del creador original
+  uint64 expiration = 6; // Timestamp de expiración
 }
