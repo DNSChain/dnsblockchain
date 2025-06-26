@@ -54,9 +54,9 @@ const (
 	// Name is the name of the application.
 	Name = "dnsblockchain"
 	// AccountAddressPrefix is the prefix for accounts addresses.
-	AccountAddressPrefix = "cosmos"
+	AccountAddressPrefix = "dns"
 	// ChainCoinType is the coin type of the chain.
-	ChainCoinType = 118
+	ChainCoinType = 100600
 )
 
 // DefaultNodeHome default home directories for the application daemon

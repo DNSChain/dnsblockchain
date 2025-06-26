@@ -7,7 +7,7 @@ import (
 	"cosmossdk.io/depinject"
 	"cosmossdk.io/depinject/appconfig"
 	"github.com/cosmos/cosmos-sdk/codec"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types" // Asegúrate que este sea el GovModuleName correcto
 
 	"dnsblockchain/x/dnsblockchain/keeper"
 	"dnsblockchain/x/dnsblockchain/types"
@@ -33,8 +33,8 @@ type ModuleInputs struct {
 	Cdc          codec.Codec
 	AddressCodec address.Codec
 
-	AuthKeeper types.AuthKeeper
-	BankKeeper types.BankKeeper
+	AuthKeeper types.AuthKeeper // Esto es AccountKeeper
+	BankKeeper types.BankKeeper // Este es el que necesitamos pasar
 }
 
 type ModuleOutputs struct {
@@ -45,7 +45,6 @@ type ModuleOutputs struct {
 }
 
 func ProvideModule(in ModuleInputs) ModuleOutputs {
-	// default to governance authority if not provided
 	authority := authtypes.NewModuleAddress(types.GovModuleName)
 	if in.Config.Authority != "" {
 		authority = authtypes.NewModuleAddressOrBech32Address(in.Config.Authority)
@@ -55,7 +54,9 @@ func ProvideModule(in ModuleInputs) ModuleOutputs {
 		in.Cdc,
 		in.AddressCodec,
 		authority,
+		in.BankKeeper, // <--- PASAR EL BANKKEEPER
 	)
+	// El AppModule también necesita BankKeeper si lo va a usar para simulación
 	m := NewAppModule(in.Cdc, k, in.AuthKeeper, in.BankKeeper)
 
 	return ModuleOutputs{DnsblockchainKeeper: k, Module: m}

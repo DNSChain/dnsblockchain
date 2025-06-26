@@ -3,9 +3,9 @@
     "messages": [
       {
         "@type": "/dnsblockchain.dnsblockchain.v1.MsgCreateDomain",
-        "creator": "cosmos1d6u9txzm4xudxc8xvjgak4ghvkydcasj6jy26m",
+        "creator": "dns1quz9qvv4yuttlql8quwn4xt9gnwrt8hu4jft78",
         "name": "domaincontrol.web3",
-        "owner": "cosmos1d6u9txzm4xudxc8xvjgak4ghvkydcasj6jy26m",
+        "owner": "dns1quz9qvv4yuttlql8quwn4xt9gnwrt8hu4jft78",
         "ns_records": [
           {
             "name": "ns1.domaincontrol.web3",

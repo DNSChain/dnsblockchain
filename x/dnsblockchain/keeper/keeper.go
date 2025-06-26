@@ -3,7 +3,7 @@ package keeper
 import (
 	"context"
 	"fmt"
-	"strings" // Para normalizar el TLD
+	"strings"
 
 	"cosmossdk.io/collections"
 	"cosmossdk.io/core/address"
@@ -20,15 +20,15 @@ type Keeper struct {
 	storeService corestore.KVStoreService
 	cdc          codec.Codec
 	addressCodec address.Codec
-	// Address capable of executing a MsgUpdateParams message.
-	// Typically, this should be the x/gov module account.
-	authority []byte
+	authority    []byte
+
+	bankKeeper types.BankKeeper // <--- AÑADIR ESTA LÍNEA
 
 	Schema        collections.Schema
 	Params        collections.Item[types.Params]
 	DomainSeq     collections.Sequence
-	Domain        collections.Map[uint64, types.Domain] // Maps ID -> Domain
-	DomainName    collections.Map[string, uint64]       // NUEVO ÍNDICE: Maps FQDN -> Domain ID
+	Domain        collections.Map[uint64, types.Domain]
+	DomainName    collections.Map[string, uint64]
 	PermittedTLDs collections.KeySet[string]
 }
 
@@ -37,6 +37,7 @@ func NewKeeper(
 	cdc codec.Codec,
 	addressCodec address.Codec,
 	authority []byte,
+	bk types.BankKeeper, // <--- AÑADIR bk COMO PARÁMETRO
 ) Keeper {
 	if _, err := addressCodec.BytesToString(authority); err != nil {
 		panic(fmt.Sprintf("invalid authority address %s: %s", authority, err))
@@ -49,10 +50,11 @@ func NewKeeper(
 		cdc:          cdc,
 		addressCodec: addressCodec,
 		authority:    authority,
+		bankKeeper:   bk, // <--- ASIGNAR bk
 
 		Params:        collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
 		Domain:        collections.NewMap(sb, types.DomainKey, "domain_by_id", collections.Uint64Key, codec.CollValue[types.Domain](cdc)),
-		DomainName:    collections.NewMap(sb, types.DomainNameKey, "domain_by_name", collections.StringKey, collections.Uint64Value), // NUEVO ÍNDICE
+		DomainName:    collections.NewMap(sb, types.DomainNameKey, "domain_by_name", collections.StringKey, collections.Uint64Value),
 		DomainSeq:     collections.NewSequence(sb, types.DomainCountKey, "domain_sequence"),
 		PermittedTLDs: collections.NewKeySet(sb, types.PermittedTLDsKey, "permitted_tlds", collections.StringKey),
 	}

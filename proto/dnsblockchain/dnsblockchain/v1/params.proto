@@ -1,15 +1,18 @@
 syntax = "proto3";
-package dnsblockchain.dnsblockchain.v1; // Paquete correcto para este módulo
+package dnsblockchain.dnsblockchain.v1;
 
 import "amino/amino.proto";
 import "gogoproto/gogo.proto";
+import "cosmos/base/v1beta1/coin.proto"; // Para sdk.Coin
 
 option go_package = "dnsblockchain/x/dnsblockchain/types";
 
-// Params defines the parameters for the dnsblockchain module.
 message Params {
-  option (amino.name) = "dnsblockchain/x/dnsblockchain/Params"; // Nombre correcto para amino
+  option (amino.name) = "dnsblockchain/x/dnsblockchain/Params";
   option (gogoproto.equal) = true;
-  // Actualmente no tiene campos, pero la estructura debe existir.
-  // Si en el futuro necesitas parámetros para este módulo, los añadirías aquí.
+
+  repeated cosmos.base.v1beta1.Coin domain_creation_fee = 1 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
 }

@@ -1,0 +1,10 @@
+[
+  {
+    "name": "ns1.myfirstdomain.web3",
+    "ipv4_addresses": ["8.8.8.8"]
+  },
+  {
+    "name": "ns2.myfirstdomain.web3",
+    "ipv4_addresses": ["8.8.4.4"]
+  }
+]

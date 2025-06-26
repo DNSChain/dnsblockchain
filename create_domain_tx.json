@@ -1,0 +1,15 @@
+{
+  "body": {
+    "messages": [
+      {
+        "@type": "/dnsblockchain.dnsblockchain.v1.MsgCreateDomain",
+        "creator": "dns1quz9qvv4yuttlql8quwn4xt9gnwrt8hu4jft78",
+        "name": "test-suite.web3",
+        "owner": "dns1quz9qvv4yuttlql8quwn4xt9gnwrt8hu4jft78",
+        "ns_records": [{"name": "ns1.test-suite.web3","ipv4_addresses": ["1.1.1.1"]}]
+      }
+    ]
+  },
+  "auth_info": {"fee":{"gas_limit":"400000"}},
+  "signatures":[]
+}

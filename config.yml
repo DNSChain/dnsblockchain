@@ -1,48 +1,75 @@
 version: 1
-validators:
-- name: alice
-  bonded: 100000000udns # Alice stakes 100 udns (100 millones de udns)
-- name: bob
-  bonded: 100000000udns   # Bob stakes 100 udns
 accounts:
-- name: alice
-  coins:
-  - 200000000udns # Alice starts with 200 udns
-- name: bob # Bob también será el faucet
-  coins:
-  - 1100000000udns # 100M iniciales + 1000M para el faucet = 1.1B udns
+  - name: alice # Validador Génesis / Proponente inicial
+    coins:
+      - 14000000000udns # 4k líquido + 10k para bonding (total 14k dns)
+    mnemonic: "blossom regular turn alter oxygen pepper regret clutch belt until hub cream task arrest parrot oak long left peace next joke embark topple ski"
+  - name: bob # Faucet y/o cuenta comunitaria inicial / Validador Génesis
+    coins:
+      - 40000000000udns # 30k líquido + 10k para bonding (total 40k dns)
+    mnemonic: "canal spoil leg eight illness recycle potato deposit bar range able gas light want note another lady any gaze inquiry artwork solve crater modify"
+
+validators:
+  - name: alice
+    bonded: 10000000000udns # 10k dns
+  - name: bob
+    bonded: 10000000000udns # 10k dns
+
 faucet:
-  name: bob # Especifica que bob es el nombre de la cuenta del faucet
-  coins: # Esto indica cuánto puede dispensar el faucet por solicitud, no su balance inicial
-  - 100000udns
+  name: bob
+  coins:
+    - 100000udns # 0.1 dns por solicitud
+  host: "0.0.0.0:4500" # Ajusta si es necesario
+
 genesis:
+  chain_id: "dnschain-mainnet-1"
   app_state:
-    staking:
-      params:
-        bond_denom: udns # El token para staking es 'udns'
-    bank: {} # Dejar vacío o eliminar. Ignite CLI poblará balances y supply desde 'accounts' y 'validators'.
-             # Si necesitas balances específicos para módulos, los añades aquí.
+    # ... (otras configuraciones de módulos) ...
     gov:
       params:
         min_deposit:
-          - denom: udns # Depósito mínimo para propuestas de gobernanza SDK
-            amount: "10000000" # 10 udns
-        voting_period: "172800s" # 2 días
-    # Añadir la configuración para los parámetros del módulo DAO
-    dao:
+          - denom: "udns"
+            amount: "50000000" # 50 dns
+        max_deposit_period: "1209600s"
+        voting_period: "1209600s"
+        quorum: "0.334000000000000000"
+        threshold: "0.500000000000000000"
+        veto_threshold: "0.334000000000000000"
+        min_initial_deposit_ratio: "0.000000000000000000" # Puedes dejar el default del SDK o especificar.
+        proposal_cancel_ratio: "0.500000000000000000" # Default del SDK
+        proposal_cancel_dest: "" # Default del SDK
+        expedited_voting_period: "86400s" # Default del SDK, puedes ajustarlo.
+        expedited_threshold: "0.667000000000000000" # Default del SDK
+        expedited_min_deposit: # <--- ASEGÚRATE QUE ESTE VALOR SEA MAYOR QUE min_deposit
+          - denom: "udns"
+            amount: "100000000" # Ejemplo: 100 dns (si min_deposit es 50 dns)
+        burn_vote_quorum: false # Default del SDK
+        burn_proposal_deposit_prevote: false # Default del SDK
+        burn_vote_veto: true # Default del SDK
+        min_deposit_ratio: "0.010000000000000000" # Default del SDK
+    dao: # Módulo DAO
       params:
-        voting_period_blocks: "500" # Ejemplo, igual al default
+        voting_period_blocks: "43200" # ~1 mes con bloques de 60s (CAMBIO)
         proposal_submission_deposit:
           - denom: "udns"
-            amount: "10000000" # Ejemplo, igual al default
-        min_yes_threshold_percent: "0.500000000000000000" # Ejemplo, igual al default
-        voting_token_denom: "udns" # Asegúrate que sea tu token único
-        voting_power_decay_duration_blocks: "100" # Para pruebas, igual al default
-        validator_reward_voting_tokens_amount:
-          denom: "udns"
-          amount: "0" # Ejemplo, igual al default
+            amount: "50000000" # 50 dns (CAMBIO)
         add_tld_proposal_cost:
           - denom: "udns"
-            amount: "5000000" # Ejemplo, igual al default
-        quorum_percent: "0.334000000000000000" # Ejemplo, quórum del 33.4%
-  chain_id: dnsblockchain
+            amount: "50000000" # 50 dns (CAMBIO)
+        min_yes_threshold_percent: "0.500000000000000000"
+        voting_token_denom: "udns"
+        voting_power_decay_duration_blocks: "259200" # ~6 meses con bloques de 60s (CAMBIO)
+        validator_reward_voting_tokens_amount:
+          denom: "udns"
+          amount: "0"
+        quorum_percent: "0.334000000000000000"
+    dnsblockchain:
+      params: # <--- Correcto
+        domain_creation_fee: # Esto es correcto porque dentro de Params, el proto es domain_creation_fee
+          - denom: "udns"
+            amount: "20000000"
+      domain_list: [] # Añadir si no está, aunque esté vacío
+      domain_count: "0" # Añadir si no está
+      permitted_tlds: # <--- Correcto
+        - "web3"
+        - "free"
