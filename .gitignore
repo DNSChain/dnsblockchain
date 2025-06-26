@@ -11,7 +11,6 @@ build/
 
 # Data directory (si es local al proyecto, aunque no es común)
 .data/
-config.yml
 
 # Dependencies (si no las quieres versionar)
 # vendor/
