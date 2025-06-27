@@ -3,9 +3,11 @@ accounts:
   - name: alice # Genesis validator / Initial account
     coins:
       - 14000000000udns # 4k liquid + 10k for bonding (total 14k dns)
+    mnemonic: "24 words mnemonic for alice that is used to generate the keys and accounts in the genesis file, replace with your own mnemonic"
   - name: bob # Faucet / Initial community account / Genesis validator
     coins:
       - 40000000000udns # 30k liquid + 10k for bonding (total 40k dns)
+    mnemonic: "24 words mnemonic for bob that is used to generate the keys and accounts in the genesis file, replace with your own mnemonic"
 
 validators:
   - name: alice
