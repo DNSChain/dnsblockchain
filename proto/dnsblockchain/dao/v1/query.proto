@@ -70,9 +70,9 @@ message QueryProposalsRequest {
   // proposal_status defines the status of the proposals.
   ProposalStatus proposal_status = 1;
   // voter defines the voter address of the proposals.
-  string voter = 2; // Eliminado: [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  string voter = 2; 
   // proposer defines the proposer address of the proposals.
-  string proposer = 3; // Eliminado: [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  string proposer = 3; 
   // pagination defines an optional pagination for the request.
   cosmos.base.query.v1beta1.PageRequest pagination = 4;
 }
@@ -87,7 +87,7 @@ message QueryProposalsResponse {
 // QueryVoteRequest is request type for the Query/Vote RPC method.
 message QueryVoteRequest {
   uint64 proposal_id = 1;
-  string voter = 2; // Eliminado: [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  string voter = 2; 
 }
 
 // QueryVoteResponse is response type for the Query/Vote RPC method.

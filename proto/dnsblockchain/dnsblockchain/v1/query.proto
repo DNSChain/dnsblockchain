@@ -37,6 +37,7 @@ service Query {
   rpc GetDomainByName(QueryGetDomainByNameRequest) returns (QueryGetDomainByNameResponse) {
     option (google.api.http).get = "/dnsblockchain/dnsblockchain/v1/domain_by_name/{name}";
   }
+
 }
 
 // QueryParamsRequest is request type for the Query/Params RPC method.
